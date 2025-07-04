@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SpCanvas - Spotify Canvas Screensaver
 
-## Getting Started
+Um screensaver elegante que exibe o Canvas do Spotify da música atualmente tocando em tela cheia.
 
-First, run the development server:
+## 🚀 Como usar
+
+### 1. Configuração
+
+1. Clone o repositório:
+```bash
+git clone <repository-url>
+cd sp-canvas
+```
+
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Configure a variável de ambiente:
+   - Crie um arquivo `.env.local` na raiz do projeto
+   - Adicione sua variável SP_DC:
+   ```
+   SP_DC=seu_valor_do_cookie_sp_dc_aqui
+   ```
+
+### 2. Como obter o cookie SP_DC
+
+1. Abra o [Spotify Web Player](https://open.spotify.com) no seu navegador
+2. Faça login na sua conta
+3. Abra as ferramentas de desenvolvedor (F12)
+4. Vá para a aba **Application** (Chrome) ou **Storage** (Firefox)
+5. No painel esquerdo, expanda **Cookies** e clique em `https://open.spotify.com`
+6. Procure pelo cookie chamado `sp_dc`
+7. Copie o valor do cookie (deve começar com "AQ" e ter mais de 50 caracteres)
+8. Cole esse valor no arquivo `.env.local`
+
+### 3. Executar o projeto
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Acesse `http://localhost:3000` no seu navegador
+5. Clique em "Iniciar Canvas" para começar o screensaver
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 Funcionalidades
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ✅ Autenticação automática com TOTP
+- ✅ Busca da música atualmente tocando
+- ✅ Exibição do Canvas em tela cheia
+- ✅ Transição automática entre múltiplos Canvas
+- ✅ Informações da música sobrepostas
+- ✅ Controle com tecla ESC para sair
+- ✅ Interface responsiva e moderna
 
-## Learn More
+## 🔧 Tecnologias
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js 14** - Framework React
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Estilização
+- **Axios** - Requisições HTTP
+- **OTPAuth** - Autenticação TOTP
+- **Spotify Web API** - Dados da música
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📱 Como funciona
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+O SpCanvas usa uma implementação robusta de autenticação TOTP (Time-based One-Time Password) que simula exatamente como o Spotify Web Player funciona:
 
-## Deploy on Vercel
+1. **Autenticação**: Gera tokens TOTP para autenticar com a API do Spotify
+2. **Busca da música**: Obtém a música atualmente tocando via Spotify Web API
+3. **Canvas**: Busca os Canvas disponíveis para a música via API interna do Spotify
+4. **Exibição**: Reproduz os vídeos Canvas em tela cheia com informações da música
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Interface
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Tela inicial**: Instruções e botão para iniciar
+- **Tela do Canvas**: Vídeo em tela cheia com overlay de informações
+- **Controles**: ESC para sair, transição automática entre Canvas
+
+## 🔒 Segurança
+
+- O cookie SP_DC é armazenado apenas localmente
+- Não há armazenamento de dados sensíveis no servidor
+- Autenticação temporária com tokens TOTP
+
+## 🐛 Solução de problemas
+
+### Erro de autenticação
+- Verifique se o cookie SP_DC está correto e atualizado
+- Certifique-se de que está logado no Spotify Web Player
+- Tente obter um novo cookie SP_DC
+
+### Nenhum Canvas disponível
+- Nem todas as músicas possuem Canvas
+- Verifique se há uma música tocando no Spotify
+- Tente com uma música diferente
+
+### Erro de rede
+- Verifique sua conexão com a internet
+- Certifique-se de que o Spotify Web Player está acessível
+
+## 📄 Licença
+
+Este projeto é de código aberto e está disponível sob a licença MIT.
