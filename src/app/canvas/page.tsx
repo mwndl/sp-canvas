@@ -23,6 +23,7 @@ import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useCanvasParams } from '../../hooks/useCanvasParams';
 import { useKeyboardControls } from '../../hooks/useKeyboardControls';
 import { useScreensaverAnimation } from '../../hooks/useScreensaverAnimation';
+import { useCanvasFetch } from '../../hooks/useCanvasFetch';
 import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
@@ -55,17 +56,11 @@ interface CanvasData {
 }
 
 export default function CanvasPage() {
-  const [track, setTrack] = useState<Track | null>(null);
-  const [canvasData, setCanvasData] = useState<CanvasData | null>(null);
   const [currentCanvasIndex, setCurrentCanvasIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastTrackUri, setLastTrackUri] = useState<string | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const router = useRouter();
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Get all parameters from custom hook
   const {
@@ -99,6 +94,25 @@ export default function CanvasPage() {
   // Keyboard controls hook
   useKeyboardControls();
 
+  // Canvas fetch hook
+  const {
+    track,
+    canvasData,
+    isLoading,
+    error,
+    lastTrackUri,
+    setTrack,
+    setCanvasData,
+    setError,
+    setLastTrackUri
+  } = useCanvasFetch({
+    autoUpdate,
+    pollingInterval,
+    trackId,
+    debugMode,
+    addDebugLog
+  });
+
   // Screensaver animation hook
   const { fadeOpacity, fadePosition, dvdPosition, fallbackRef } = useScreensaverAnimation({
     mode,
@@ -124,81 +138,7 @@ export default function CanvasPage() {
     return () => clearInterval(clockInterval);
   }, []);
 
-  const fetchCanvas = async (specificTrackId?: string) => {
-    try {
-      let url = '/api/spotify/canvas';
-      if (specificTrackId) {
-        url += `?trackUri=spotify:track:${specificTrackId}`;
-        console.log('🎯 Searching for specific Track ID:', specificTrackId);
-        console.log('🔗 Request URL:', url);
-        if (debugMode) {
-          addDebugLog('API', `Searching for specific Track ID: ${specificTrackId}`);
-        }
-      } else {
-        console.log('🎵 Searching for current track');
-        if (debugMode) {
-          addDebugLog('API', 'Searching for current track');
-        }
-      }
 
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        // If no track is playing AND it's not a specific Track ID, it's not an error
-        if (errorData.error === 'No track currently playing' && !specificTrackId) {
-          setTrack(null);
-          setCanvasData(null);
-          setLastTrackUri(null);
-          setError(null);
-          console.log('⏰ No track playing - showing clock');
-          if (debugMode) {
-            addDebugLog('INFO', 'No track playing - showing clock');
-          }
-          return;
-        }
-        
-        // If it's a specific Track ID and there's an error, show the error
-        if (specificTrackId) {
-          console.error('❌ Error searching for specific Track ID:', errorData.error);
-          if (debugMode) {
-            addDebugLog('ERROR', `Error searching for specific Track ID: ${errorData.error}`);
-          }
-          setError(`Error searching for track: ${errorData.error}`);
-          return;
-        }
-        
-        throw new Error(errorData.error || 'Failed to fetch canvas');
-      }
-
-      const data = await response.json();
-      
-      // Verificar se a música mudou
-      const currentTrackUri = data.track?.uri || data.trackUri;
-      if (currentTrackUri !== lastTrackUri) {
-        setTrack(data.track);
-        setCanvasData(data.canvas);
-        setLastTrackUri(currentTrackUri);
-        setCurrentCanvasIndex(0); // Reset canvas index
-        setVideoFailed(false); // Reset video failure state
-        setError(null); // Clear any previous error
-        console.log('🎵 New track detected:', data.track?.name || 'Track ID');
-        if (debugMode) {
-          addDebugLog('INFO', `New track detected: ${data.track?.name || 'Track ID'}`);
-          addDebugLog('INFO', `Canvas found: ${data.canvas?.canvasesList?.length || 0}`);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching canvas:', err);
-      if (debugMode) {
-        addDebugLog('ERROR', `Error fetching canvas: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      }
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Event listeners for video
   useEffect(() => {
@@ -299,38 +239,15 @@ export default function CanvasPage() {
     };
   }, []);
 
-  // Polling to check for track changes
-  useEffect(() => {
-    // Only do polling if autoUpdate is enabled AND it's not a specific track
-    if (autoUpdate && !trackId) {
-      console.log(`🔄 Starting automatic polling for current track (every ${pollingInterval/1000}s)`);
-      // Check at configured interval if track changed
-      pollingIntervalRef.current = setInterval(() => {
-        fetchCanvas();
-      }, pollingInterval);
 
-      return () => {
-        if (pollingIntervalRef.current) {
-          console.log('⏹️ Stopping automatic polling');
-          clearInterval(pollingIntervalRef.current);
-        }
-      };
-    } else if (trackId) {
-      console.log('🎯 Specific track detected - polling disabled');
+
+  // Reset canvas index when track changes
+  useEffect(() => {
+    if (lastTrackUri) {
+      setCurrentCanvasIndex(0);
+      setVideoFailed(false);
     }
-  }, [autoUpdate, trackId, pollingInterval, lastTrackUri]);
-
-  useEffect(() => {
-    const fetchInitialCanvas = async () => {
-      if (trackId) {
-        await fetchCanvas(trackId);
-      } else {
-        await fetchCanvas();
-      }
-    };
-
-    fetchInitialCanvas();
-  }, [trackId]);
+  }, [lastTrackUri]);
 
   useEffect(() => {
     if (canvasData && canvasData.canvasesList.length > 1) {
