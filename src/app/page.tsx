@@ -9,10 +9,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<ScreensaverMode>('static');
-  const [fadeInterval, setFadeInterval] = useState(3000);
+  const [fadeInterval, setFadeInterval] = useState(3); // em segundos
   const [autoUpdate, setAutoUpdate] = useState(true);
+  const [pollingInterval, setPollingInterval] = useState(5); // em segundos
   const [searchMode, setSearchMode] = useState<'auto' | 'specific'>('auto');
   const [trackId, setTrackId] = useState('');
+  const [showTrackInfo, setShowTrackInfo] = useState(true); // Nova opção
   const router = useRouter();
 
   const startScreensaver = async () => {
@@ -34,11 +36,19 @@ export default function Home() {
       if (mode !== 'static') {
         canvasUrl.searchParams.set('mode', mode);
         if (mode === 'fade') {
-          canvasUrl.searchParams.set('fadeInterval', fadeInterval.toString());
+          canvasUrl.searchParams.set('fadeInterval', (fadeInterval * 1000).toString());
         }
       }
       if (!autoUpdate) {
         canvasUrl.searchParams.set('autoUpdate', 'false');
+      }
+      if (autoUpdate) {
+        canvasUrl.searchParams.set('pollingInterval', (pollingInterval * 1000).toString());
+      }
+      
+      // Adicionar configuração de exibir informações da faixa
+      if (!showTrackInfo) {
+        canvasUrl.searchParams.set('showTrackInfo', 'false');
       }
       
       // Adicionar Track ID se for modo específico
@@ -57,20 +67,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-700">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-gray-700">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">SpCanvas</h1>
           <p className="text-gray-300 text-lg">Spotify Canvas Screensaver</p>
         </div>
 
         <div className="space-y-6">
+          {/* Seção: Busca de Música */}
           <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
-            <h3 className="font-semibold text-white mb-2">Configurações</h3>
+            <h3 className="font-semibold text-white mb-4 flex items-center">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+              Busca de Música
+            </h3>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Buscar Música
+                  Modo de Busca
                 </label>
                 <div className="space-y-2">
                   <label className="flex items-center">
@@ -117,9 +131,86 @@ export default function Home() {
                 </div>
               )}
 
+              {searchMode === 'auto' && (
+                <div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={autoUpdate}
+                      onChange={(e) => setAutoUpdate(e.target.checked)}
+                      className="mr-2 accent-blue-400"
+                    />
+                    <span className="text-sm font-medium text-gray-300">
+                      Atualizar automaticamente
+                    </span>
+                  </label>
+                  
+                  {autoUpdate && (
+                    <div className="mt-3">
+                      <label htmlFor="pollingInterval" className="block text-sm font-medium text-gray-300 mb-2">
+                        Intervalo de Atualização (segundos)
+                      </label>
+                      <input
+                        type="number"
+                        id="pollingInterval"
+                        value={pollingInterval}
+                        onChange={(e) => setPollingInterval(parseInt(e.target.value) || 5)}
+                        min="1"
+                        max="60"
+                        step="1"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        Verificar mudanças na música a cada {pollingInterval} segundo{pollingInterval !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Seção: Canvas */}
+          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
+            <h3 className="font-semibold text-white mb-4 flex items-center">
+              <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+              Canvas
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={showTrackInfo}
+                    onChange={(e) => setShowTrackInfo(e.target.checked)}
+                    className="mr-2 accent-blue-400"
+                  />
+                  <span className="text-sm font-medium text-gray-300">
+                    Exibir informações da faixa
+                  </span>
+                </label>
+                <p className="text-xs text-gray-400 mt-1">
+                  Mostra título, artista e álbum sobrepostos no canvas
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Seção: Fallbacks (Capa do Álbum e Relógio) */}
+          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
+            <h3 className="font-semibold text-white mb-4 flex items-center">
+              <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+              Fallbacks
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Configurações para quando não há canvas disponível (capa do álbum) ou música tocando (relógio)
+            </p>
+            
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Modo de Screensaver
+                  Modo de Exibição
                 </label>
                 <div className="space-y-2">
                   <label className="flex items-center">
@@ -161,40 +252,23 @@ export default function Home() {
               {mode === 'fade' && (
                 <div>
                   <label htmlFor="fadeInterval" className="block text-sm font-medium text-gray-300 mb-2">
-                    Intervalo do Fade (ms)
+                    Intervalo do Fade (segundos)
                   </label>
                   <input
                     type="number"
                     id="fadeInterval"
                     value={fadeInterval}
-                    onChange={(e) => setFadeInterval(parseInt(e.target.value) || 3000)}
-                    min="1000"
-                    max="10000"
-                    step="500"
+                    onChange={(e) => setFadeInterval(parseInt(e.target.value) || 3)}
+                    min="1"
+                    max="30"
+                    step="1"
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Fade in/out a cada {fadeInterval} segundo{fadeInterval !== 1 ? 's' : ''}
+                  </p>
                 </div>
               )}
-
-              <div>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={autoUpdate}
-                    onChange={(e) => setAutoUpdate(e.target.checked)}
-                    disabled={searchMode === 'specific'}
-                    className="mr-2 accent-blue-400 disabled:opacity-50"
-                  />
-                  <span className={`text-sm font-medium ${searchMode === 'specific' ? 'text-gray-500' : 'text-gray-300'}`}>
-                    Atualizar automaticamente (a cada 5s)
-                  </span>
-                </label>
-                {searchMode === 'specific' && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Auto-update desabilitado para faixas específicas
-                  </p>
-                )}
-              </div>
             </div>
           </div>
 
