@@ -151,9 +151,43 @@ export default function CanvasPage() {
     const currentTimeMs = playerProgress.progress;
     let idx = -1; // -1 = aguardando primeira linha
     
-    // Encontrar a linha ativa
+    // Encontrar a linha ativa, pulando instrumentais falsos
     for (let i = 0; i < lyrics.lines.length; i++) {
-      const start = parseInt(lyrics.lines[i].startTimeMs);
+      const line = lyrics.lines[i];
+      const start = parseInt(line.startTimeMs);
+      
+      // Se é um instrumental, verificar se é falso
+      if (line.words.trim() === '♪') {
+        // Encontrar a linha anterior (não instrumental)
+        let previousLine = null;
+        for (let j = i - 1; j >= 0; j--) {
+          if (lyrics.lines[j].words.trim() !== '♪') {
+            previousLine = lyrics.lines[j];
+            break;
+          }
+        }
+        
+        // Encontrar a próxima linha (não instrumental)
+        let nextLine = null;
+        for (let j = i + 1; j < lyrics.lines.length; j++) {
+          if (lyrics.lines[j].words.trim() !== '♪') {
+            nextLine = lyrics.lines[j];
+            break;
+          }
+        }
+        
+        // Calcular distância entre linhas
+        const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : start;
+        const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : start + 10000;
+        const timeDistance = nextTime - previousTime;
+        
+        // Se é um instrumental falso, pular
+        if (timeDistance < 15000) {
+          continue;
+        }
+      }
+      
+      // Se chegou até aqui, é uma linha válida
       if (currentTimeMs >= start) {
         idx = i;
       } else {

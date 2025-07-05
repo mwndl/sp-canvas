@@ -1,4 +1,4 @@
-import { RefObject } from 'react';
+import { RefObject, useEffect, useState } from 'react';
 
 interface Track {
   id: string;
@@ -80,9 +80,75 @@ export const FallbackDisplay = ({
   lyricsMode = '5lines'
 }: FallbackDisplayProps) => {
   
+  const [currentLyricIndexState, setCurrentLyricIndex] = useState(currentLyricIndex);
+
+  // Atualizar estado local quando prop mudar
+  useEffect(() => {
+    setCurrentLyricIndex(currentLyricIndex);
+  }, [currentLyricIndex]);
+
+  // Sincronizar a linha da letra com o tempo do player do Spotify
+  useEffect(() => {
+    if (!showLyrics || !lyrics || !playerProgress) return;
+    
+    const currentTimeMs = playerProgress.progress;
+    let idx = -1; // -1 = aguardando primeira linha
+    
+    // Encontrar a linha ativa, pulando instrumentais falsos
+    for (let i = 0; i < lyrics.lines.length; i++) {
+      const line = lyrics.lines[i];
+      const start = parseInt(line.startTimeMs);
+      
+      // Se é um instrumental, verificar se é falso
+      if (line.words.trim() === '♪') {
+        // Encontrar a linha anterior (não instrumental)
+        let previousLine = null;
+        for (let j = i - 1; j >= 0; j--) {
+          if (lyrics.lines[j].words.trim() !== '♪') {
+            previousLine = lyrics.lines[j];
+            break;
+          }
+        }
+        
+        // Encontrar a próxima linha (não instrumental)
+        let nextLine = null;
+        for (let j = i + 1; j < lyrics.lines.length; j++) {
+          if (lyrics.lines[j].words.trim() !== '♪') {
+            nextLine = lyrics.lines[j];
+            break;
+          }
+        }
+        
+        // Calcular distância entre linhas
+        const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : start;
+        const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : start + 10000;
+        const timeDistance = nextTime - previousTime;
+        
+        // Se é um instrumental falso, pular
+        if (timeDistance < 15000) {
+          continue;
+        }
+      }
+      
+      // Se chegou até aqui, é uma linha válida
+      if (currentTimeMs >= start) {
+        idx = i;
+      } else {
+        break; // Parar na primeira linha que ainda não chegou
+      }
+    }
+    
+    // Log para depuração
+    if (debugMode) {
+      console.log('LYRICS', `Player time: ${(currentTimeMs/1000).toFixed(2)}s, idx: ${idx}, line: ${idx >= 0 ? lyrics.lines[idx]?.words : 'waiting...'}`);
+    }
+    
+    setCurrentLyricIndex(idx);
+  }, [showLyrics, lyrics, playerProgress, debugMode]);
+
   // Calcular progresso para animação de "..." quando aguardando primeira linha
   const getWaitingProgress = () => {
-    if (!lyrics || currentLyricIndex >= 0 || !playerProgress) return 0;
+    if (!lyrics || currentLyricIndexState >= 0 || !playerProgress) return 0;
     
     const currentTimeMs = playerProgress.progress;
     const firstLineTime = parseInt(lyrics.lines[0]?.startTimeMs || '0');
@@ -159,7 +225,7 @@ export const FallbackDisplay = ({
             className={`mx-auto px-6 ${lyricsMode === 'left' ? 'w-full max-w-6xl' : 'w-full max-w-4xl text-center'}`}
             style={{
               ...(lyricsMode === 'left' && {
-                transform: `translateY(-${currentLyricIndex * 0.3}vh)`,
+                transform: `translateY(-${currentLyricIndexState * 0.3}vh)`,
                 transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
               })
             }}
@@ -202,25 +268,25 @@ export const FallbackDisplay = ({
               const maxLines = lyricsMode === 'left' ? 3 : 2; // 3 linhas anteriores para left, 2 para 5lines
               
               // Quando aguardando primeira linha, mostrar apenas a linha 0
-              if (currentLyricIndex === -1) {
+              if (currentLyricIndexState === -1) {
                 if (idx !== 0) return null;
               } else {
                 // Estado normal - mostrar linhas baseado no modo
                 if (lyricsMode === 'left') {
                   // Modo left: mostrar linhas anteriores e próximas
-                  if (idx < currentLyricIndex - 2 || idx > currentLyricIndex + 3) return null;
+                  if (idx < currentLyricIndexState - 2 || idx > currentLyricIndexState + 3) return null;
                 } else {
                   // Modo 5 linhas: mostrar linhas próximas à atual
-                  if (Math.abs(idx - currentLyricIndex) > maxLines) return null;
+                  if (Math.abs(idx - currentLyricIndexState) > maxLines) return null;
                 }
               }
               
-              const isActive = idx === currentLyricIndex;
-              const isNext = idx === currentLyricIndex + 1;
-              const isPrevious = idx === currentLyricIndex - 1;
+              const isActive = idx === currentLyricIndexState;
+              const isNext = idx === currentLyricIndexState + 1;
+              const isPrevious = idx === currentLyricIndexState - 1;
               
               // Estado de aguardando primeira linha - mostrar "..." no lugar da linha atual
-              if (currentLyricIndex === -1 && idx === 0) {
+              if (currentLyricIndexState === -1 && idx === 0) {
                 const progress = getWaitingProgress();
                 
                 if (debugMode) {
