@@ -1,105 +1,105 @@
 # SpotSaver - Spotify Canvas Screensaver
 
-Um screensaver elegante que exibe o Canvas do Spotify da música atualmente tocando em tela cheia.
+An elegant screensaver that displays the Spotify Canvas of the currently playing music in fullscreen.
 
-## 🚀 Como usar
+## 🚀 How to use
 
-### 1. Configuração
+### 1. Setup
 
-1. Clone o repositório:
+1. Clone the repository:
 ```bash
 git clone <repository-url>
 cd spotsaver
 ```
 
-2. Instale as dependências:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Configure a variável de ambiente:
-   - Crie um arquivo `.env` na raiz do projeto
-   - Adicione sua variável SP_DC:
+3. Configure the environment variable:
+   - Create a `.env` file in the project root
+   - Add your SP_DC variable:
    ```
-   SP_DC=seu_valor_do_cookie_sp_dc_aqui
+   SP_DC=your_sp_dc_cookie_value_here
    ```
 
-### 2. Como obter o cookie SP_DC
+### 2. How to get the SP_DC cookie
 
-1. Abra o [Spotify Web Player](https://open.spotify.com) no seu navegador
-2. Faça login na sua conta
-3. Abra as ferramentas de desenvolvedor (F12)
-4. Vá para a aba **Application** (Chrome) ou **Storage** (Firefox)
-5. No painel esquerdo, expanda **Cookies** e clique em `https://open.spotify.com`
-6. Procure pelo cookie chamado `sp_dc`
-7. Copie o valor do cookie (deve começar com "AQ" e ter mais de 50 caracteres)
-8. Cole esse valor no arquivo `.env`
+1. Open [Spotify Web Player](https://open.spotify.com) in your browser
+2. Log in to your account
+3. Open developer tools (F12)
+4. Go to the **Application** tab (Chrome) or **Storage** tab (Firefox)
+5. In the left panel, expand **Cookies** and click on `https://open.spotify.com`
+6. Look for the cookie named `sp_dc`
+7. Copy the cookie value (should start with "AQ" and have more than 50 characters)
+8. Paste this value in the `.env` file
 
-### 3. Executar o projeto
+### 3. Run the project
 
 ```bash
 npm run dev
 ```
 
-4. Acesse `http://localhost:3000` no seu navegador
-5. Clique em "Iniciar Canvas" para começar o screensaver
+4. Access `http://localhost:3000` in your browser
+5. Click "Start Canvas" to begin the screensaver
 
-## 🎯 Funcionalidades
+## 🎯 Features
 
-- ✅ Autenticação automática com TOTP
-- ✅ Busca da música atualmente tocando
-- ✅ Exibição do Canvas em tela cheia
-- ✅ Transição automática entre múltiplos Canvas
-- ✅ Informações da música sobrepostas
-- ✅ Controle com tecla ESC para sair
-- ✅ Interface responsiva e moderna
+- ✅ Automatic TOTP authentication
+- ✅ Search for currently playing music
+- ✅ Fullscreen Canvas display
+- ✅ Automatic transition between multiple Canvas
+- ✅ Music information overlay
+- ✅ ESC key control to exit
+- ✅ Responsive and modern interface
 
-## 🔧 Tecnologias
+## 🔧 Technologies
 
-- **Next.js 14** - Framework React
-- **TypeScript** - Tipagem estática
-- **Tailwind CSS** - Estilização
-- **Axios** - Requisições HTTP
-- **OTPAuth** - Autenticação TOTP
-- **Spotify Web API** - Dados da música
+- **Next.js 14** - React framework
+- **TypeScript** - Static typing
+- **Tailwind CSS** - Styling
+- **Axios** - HTTP requests
+- **OTPAuth** - TOTP authentication
+- **Spotify Web API** - Music data
 
-## 📱 Como funciona
+## 📱 How it works
 
-O SpotSaver usa uma implementação robusta de autenticação TOTP (Time-based One-Time Password) que simula exatamente como o Spotify Web Player funciona:
+SpotSaver uses a robust TOTP (Time-based One-Time Password) authentication implementation that exactly simulates how the Spotify Web Player works:
 
-1. **Autenticação**: Gera tokens TOTP para autenticar com a API do Spotify
-2. **Busca da música**: Obtém a música atualmente tocando via Spotify Web API
-3. **Canvas**: Busca os Canvas disponíveis para a música via API interna do Spotify
-4. **Exibição**: Reproduz os vídeos Canvas em tela cheia com informações da música
+1. **Authentication**: Generates TOTP tokens to authenticate with Spotify API
+2. **Music search**: Gets the currently playing music via Spotify Web API
+3. **Canvas**: Searches for available Canvas for the music via Spotify's internal API
+4. **Display**: Plays Canvas videos in fullscreen with music information
 
 ## 🎨 Interface
 
-- **Tela inicial**: Instruções e botão para iniciar
-- **Tela do Canvas**: Vídeo em tela cheia com overlay de informações
-- **Controles**: ESC para sair, transição automática entre Canvas
+- **Home screen**: Instructions and start button
+- **Canvas screen**: Fullscreen video with information overlay
+- **Controls**: ESC to exit, automatic Canvas transition
 
-## 🔒 Segurança
+## 🔒 Security
 
-- O cookie SP_DC é armazenado apenas localmente
-- Não há armazenamento de dados sensíveis no servidor
-- Autenticação temporária com tokens TOTP
+- The SP_DC cookie is stored locally only
+- No sensitive data is stored on the server
+- Temporary authentication with TOTP tokens
 
-## 🐛 Solução de problemas
+## 🐛 Troubleshooting
 
-### Erro de autenticação
-- Verifique se o cookie SP_DC está correto e atualizado
-- Certifique-se de que está logado no Spotify Web Player
-- Tente obter um novo cookie SP_DC
+### Authentication error
+- Check if the SP_DC cookie is correct and up to date
+- Make sure you're logged in to Spotify Web Player
+- Try getting a new SP_DC cookie
 
-### Nenhum Canvas disponível
-- Nem todas as músicas possuem Canvas
-- Verifique se há uma música tocando no Spotify
-- Tente com uma música diferente
+### No Canvas available
+- Not all songs have Canvas
+- Check if there's music playing on Spotify
+- Try with a different song
 
-### Erro de rede
-- Verifique sua conexão com a internet
-- Certifique-se de que o Spotify Web Player está acessível
+### Network error
+- Check your internet connection
+- Make sure Spotify Web Player is accessible
 
-## 📄 Licença
+## 📄 License
 
-Este projeto é de código aberto e está disponível sob a licença MIT.
+This project is open source and available under the MIT license.
