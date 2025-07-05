@@ -4,7 +4,62 @@ An elegant screensaver that displays the Spotify Canvas of the currently playing
 
 ## 🚀 How to use
 
-### 1. Setup
+### Option 1: Docker (Recommended)
+
+#### 1. Setup with Docker
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd spotsaver
+```
+
+2. Configure the environment variable:
+   - Copy the example environment file:
+   ```bash
+   cp env.example .env
+   ```
+   - Edit `.env` and add your SP_DC cookie value
+
+3. Build and run with Docker:
+```bash
+# Using the automated script
+./docker-build.sh
+
+# Or manually with docker-compose
+docker-compose up -d
+
+# Or manually with docker
+docker build -t spotsaver:latest .
+docker run -d --name spotsaver -p 3000:3000 --env-file .env spotsaver:latest
+```
+
+4. Access `http://localhost:3000` in your browser
+5. Click "Start Canvas" to begin the screensaver
+
+#### Docker Commands
+
+```bash
+# View logs
+docker logs -f spotsaver
+
+# Stop container
+docker stop spotsaver
+
+# Start container
+docker start spotsaver
+
+# Remove container
+docker rm spotsaver
+
+# Update and restart
+docker-compose down
+docker-compose up -d --build
+```
+
+### Option 2: Local Development
+
+#### 1. Setup
 
 1. Clone the repository:
 ```bash
@@ -24,7 +79,7 @@ npm install
    SP_DC=your_sp_dc_cookie_value_here
    ```
 
-### 2. How to get the SP_DC cookie
+#### 2. How to get the SP_DC cookie
 
 1. Open [Spotify Web Player](https://open.spotify.com) in your browser
 2. Log in to your account
@@ -35,7 +90,7 @@ npm install
 7. Copy the cookie value (should start with "AQ" and have more than 50 characters)
 8. Paste this value in the `.env` file
 
-### 3. Run the project
+#### 3. Run the project
 
 ```bash
 npm run dev
@@ -143,6 +198,42 @@ SpotSaver uses a robust TOTP (Time-based One-Time Password) authentication imple
 
 ### Video compatibility issues
 - Some Canvas videos returned by Spotify's CDN contain `movflags` parameters that are not compatible with older browsers
+
+## 🐳 Docker
+
+### Requirements
+- Docker
+- Docker Compose (optional, for easier management)
+
+### Quick Start
+```bash
+# Clone and setup
+git clone <repository-url>
+cd spotsaver
+cp env.example .env
+# Edit .env with your SPOTIFY_SP_DC value
+
+# Build and run
+./docker-build.sh
+```
+
+### Production Deployment
+```bash
+# Using docker-compose
+docker-compose up -d
+
+# Using docker directly
+docker build -t spotsaver:latest .
+docker run -d --name spotsaver -p 3000:3000 --env-file .env --restart unless-stopped spotsaver:latest
+```
+
+### Environment Variables
+- `SPOTIFY_SP_DC`: Your Spotify SP_DC cookie value (required)
+- `PORT`: Custom port (optional, default: 3000)
+- `NODE_ENV`: Environment (optional, default: production)
+
+### Health Check
+The container includes a health check that monitors the `/api/spotify/token` endpoint to ensure the application is running correctly.
 - If videos fail to load, the system will automatically fallback to album cover display
 - You can adjust the `timeout` parameter to control how long to wait before fallback
 - Use `debug=true` to see detailed information about video loading attempts
