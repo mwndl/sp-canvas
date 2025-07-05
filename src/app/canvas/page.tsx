@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useDebugLogs } from '../../hooks/useDebugLogs';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useCanvasParams } from '../../hooks/useCanvasParams';
+import { useKeyboardControls } from '../../hooks/useKeyboardControls';
 import { DebugPanel } from '../../components/DebugPanel';
 
 interface Track {
@@ -95,6 +96,9 @@ export default function CanvasPage() {
     addDebugLog,
     onVideoFailure: () => setVideoFailed(true)
   });
+
+  // Keyboard controls hook
+  useKeyboardControls();
 
   // Initial debug log if active
   useEffect(() => {
@@ -458,16 +462,7 @@ export default function CanvasPage() {
     }
   }, [mode, canvasData, dvdVelocity, track]);
 
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      router.push('/');
-    }
-  };
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, []);
 
   if (isLoading) {
     return (
