@@ -24,6 +24,8 @@ import { useCanvasParams } from '../../hooks/useCanvasParams';
 import { useKeyboardControls } from '../../hooks/useKeyboardControls';
 import { useScreensaverAnimation } from '../../hooks/useScreensaverAnimation';
 import { useCanvasFetch } from '../../hooks/useCanvasFetch';
+import { useClock } from '../../hooks/useClock';
+import { useCanvasRotation } from '../../hooks/useCanvasRotation';
 import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
@@ -56,10 +58,8 @@ interface CanvasData {
 }
 
 export default function CanvasPage() {
-  const [currentCanvasIndex, setCurrentCanvasIndex] = useState(0);
   const [videoFailed, setVideoFailed] = useState(false);
 
-  const [currentTime, setCurrentTime] = useState(new Date());
   const router = useRouter();
   
   // Get all parameters from custom hook
@@ -113,6 +113,15 @@ export default function CanvasPage() {
     addDebugLog
   });
 
+  // Clock hook
+  const currentTime = useClock();
+
+  // Canvas rotation hook
+  const { currentCanvasIndex, setCurrentCanvasIndex } = useCanvasRotation({
+    canvasData,
+    lastTrackUri
+  });
+
   // Screensaver animation hook
   const { fadeOpacity, fadePosition, dvdPosition, fallbackRef } = useScreensaverAnimation({
     mode,
@@ -129,14 +138,7 @@ export default function CanvasPage() {
     }
   }, [debugMode, maxDebugLogs, videoTimeout, addDebugLog]);
 
-  // Atualizar relógio a cada segundo
-  useEffect(() => {
-    const clockInterval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
 
-    return () => clearInterval(clockInterval);
-  }, []);
 
 
 
@@ -241,25 +243,12 @@ export default function CanvasPage() {
 
 
 
-  // Reset canvas index when track changes
+  // Reset video failure when track changes
   useEffect(() => {
     if (lastTrackUri) {
-      setCurrentCanvasIndex(0);
       setVideoFailed(false);
     }
   }, [lastTrackUri]);
-
-  useEffect(() => {
-    if (canvasData && canvasData.canvasesList.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentCanvasIndex((prev) => 
-          (prev + 1) % canvasData.canvasesList.length
-        );
-      }, 3000); // Change canvas every 3 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [canvasData]);
 
   // Try to play video when canvas changes
   useEffect(() => {
