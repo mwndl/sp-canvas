@@ -116,7 +116,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-gray-700 relative">
+''      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-6xl w-full border border-gray-700 relative">
         {/* Language Selector */}
         <div className="absolute top-4 right-4">
           <select
@@ -134,296 +134,305 @@ export default function Home() {
           <p className="text-gray-300 text-lg">{t.subtitle}</p>
         </div>
 
-        <div className="space-y-6">
-          {/* Seção: Busca de Música */}
-          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
-            <h3 className="font-semibold text-white mb-4 flex items-center">
-              <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-              {t.musicSearch}
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  {t.searchMode}
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="searchMode"
-                      value="auto"
-                      checked={searchMode === 'auto'}
-                      onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
-                      className="mr-2 accent-blue-400"
-                    />
-                    <span className="text-sm text-gray-300">{t.autoDetect}</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="searchMode"
-                      value="specific"
-                      checked={searchMode === 'specific'}
-                      onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
-                      className="mr-2 accent-blue-400"
-                    />
-                    <span className="text-sm text-gray-300">{t.specificTrack}</span>
-                  </label>
-                </div>
-              </div>
-
-              {searchMode === 'specific' && (
-                <div>
-                  <label htmlFor="trackId" className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.trackId}
-                  </label>
-                  <input
-                    type="text"
-                    id="trackId"
-                    value={trackId}
-                    onChange={(e) => setTrackId(e.target.value)}
-                    placeholder={language === 'pt' ? 'ID ou URL do Spotify' : 'ID or Spotify URL'}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    {t.trackIdHelp}
-                  </p>
-                </div>
-              )}
-
-              {searchMode === 'auto' && (
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={autoUpdate}
-                      onChange={(e) => setAutoUpdate(e.target.checked)}
-                      className="mr-2 accent-blue-400"
-                    />
-                    <span className="text-sm font-medium text-gray-300">
-                      {t.autoUpdate}
-                    </span>
-                  </label>
-                  
-                  {autoUpdate && (
-                    <div className="mt-3">
-                      <label htmlFor="pollingInterval" className="block text-sm font-medium text-gray-300 mb-2">
-                        {t.updateInterval}
-                      </label>
-                      <input
-                        type="number"
-                        id="pollingInterval"
-                        value={pollingInterval}
-                        onChange={(e) => setPollingInterval(parseInt(e.target.value) || 5)}
-                        min="1"
-                        max="60"
-                        step="1"
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                      />
-                      <p className="text-xs text-gray-400 mt-1">
-                        {formatTranslation(t.updateIntervalHelp, {
-                          interval: pollingInterval,
-                          plural: pollingInterval !== 1 ? t.seconds : t.second
-                        })}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Seção: Canvas */}
-          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
-            <h3 className="font-semibold text-white mb-4 flex items-center">
-              <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-              {t.canvas}
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showTrackInfo}
-                    onChange={(e) => setShowTrackInfo(e.target.checked)}
-                    className="mr-2 accent-blue-400"
-                  />
-                  <span className="text-sm font-medium text-gray-300">
-                    {t.showTrackInfo}
-                  </span>
-                </label>
-                <p className="text-xs text-gray-400 mt-1">
-                  {t.showTrackInfoHelp}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Seção: Lyrics */}
-          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
-            <h3 className="font-semibold text-white mb-4 flex items-center">
-              <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
-              {t.lyrics}
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showLyrics}
-                    onChange={(e) => setShowLyrics(e.target.checked)}
-                    className="mr-2 accent-blue-400"
-                  />
-                  <span className="text-sm font-medium text-gray-300">
-                    {t.showLyrics}
-                  </span>
-                </label>
-                <p className="text-xs text-gray-400 mt-1">
-                  {t.showLyricsHelp}
-                </p>
-              </div>
-
-              {showLyrics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Coluna Esquerda - Configurações Principais */}
+          <div className="space-y-6">
+            {/* Seção: Busca de Música */}
+            <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center">
+                <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                {t.musicSearch}
+              </h3>
+              
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.backgroundMode}
+                    {t.searchMode}
                   </label>
                   <div className="space-y-2">
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        name="backgroundMode"
-                        value="theme"
-                        checked={backgroundMode === 'theme'}
-                        onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                        name="searchMode"
+                        value="auto"
+                        checked={searchMode === 'auto'}
+                        onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
                         className="mr-2 accent-blue-400"
                       />
-                      <span className="text-sm text-gray-300">{t.themeColor}</span>
+                      <span className="text-sm text-gray-300">{t.autoDetect}</span>
                     </label>
                     <label className="flex items-center">
                       <input
                         type="radio"
-                        name="backgroundMode"
-                        value="fixed"
-                        checked={backgroundMode === 'fixed'}
-                        onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                        name="searchMode"
+                        value="specific"
+                        checked={searchMode === 'specific'}
+                        onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
                         className="mr-2 accent-blue-400"
                       />
-                      <span className="text-sm text-gray-300">{t.fixedColor}</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="backgroundMode"
-                        value="cover"
-                        checked={backgroundMode === 'cover'}
-                        onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
-                        className="mr-2 accent-blue-400"
-                      />
-                      <span className="text-sm text-gray-300">{t.albumCover}</span>
+                      <span className="text-sm text-gray-300">{t.specificTrack}</span>
                     </label>
                   </div>
+                </div>
 
-                  {backgroundMode === 'fixed' && (
-                    <div className="mt-3">
-                      <label htmlFor="fixedColor" className="block text-sm font-medium text-gray-300 mb-2">
-                        {t.fixedColor}
-                      </label>
+                {searchMode === 'specific' && (
+                  <div>
+                    <label htmlFor="trackId" className="block text-sm font-medium text-gray-300 mb-2">
+                      {t.trackId}
+                    </label>
+                    <input
+                      type="text"
+                      id="trackId"
+                      value={trackId}
+                      onChange={(e) => setTrackId(e.target.value)}
+                      placeholder={language === 'pt' ? 'ID ou URL do Spotify' : 'ID or Spotify URL'}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      {t.trackIdHelp}
+                    </p>
+                  </div>
+                )}
+
+                {searchMode === 'auto' && (
+                  <div>
+                    <label className="flex items-center">
                       <input
-                        type="color"
-                        id="fixedColor"
-                        value={fixedColor}
-                        onChange={(e) => setFixedColor(e.target.value)}
-                        className="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+                        type="checkbox"
+                        checked={autoUpdate}
+                        onChange={(e) => setAutoUpdate(e.target.checked)}
+                        className="mr-2 accent-blue-400"
                       />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Seção: Fallbacks (Capa do Álbum e Relógio) */}
-          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
-            <h3 className="font-semibold text-white mb-4 flex items-center">
-              <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
-              {t.fallbacks}
-            </h3>
-            <p className="text-xs text-gray-400 mb-4">
-              {t.fallbacksDescription}
-            </p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  {t.displayMode}
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="static"
-                      checked={mode === 'static'}
-                      onChange={(e) => setMode(e.target.value as ScreensaverMode)}
-                      className="mr-2 accent-blue-400"
-                    />
-                    <span className="text-sm text-gray-300">{t.static}</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="fade"
-                      checked={mode === 'fade'}
-                      onChange={(e) => setMode(e.target.value as ScreensaverMode)}
-                      className="mr-2 accent-blue-400"
-                    />
-                    <span className="text-sm text-gray-300">{t.fadeInOut}</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="dvd"
-                      checked={mode === 'dvd'}
-                      onChange={(e) => setMode(e.target.value as ScreensaverMode)}
-                      className="mr-2 accent-blue-400"
-                    />
-                    <span className="text-sm text-gray-300">{t.dvdMovement}</span>
-                  </label>
-                </div>
+                      <span className="text-sm font-medium text-gray-300">
+                        {t.autoUpdate}
+                      </span>
+                    </label>
+                    
+                    {autoUpdate && (
+                      <div className="mt-3">
+                        <label htmlFor="pollingInterval" className="block text-sm font-medium text-gray-300 mb-2">
+                          {t.updateInterval}
+                        </label>
+                        <input
+                          type="number"
+                          id="pollingInterval"
+                          value={pollingInterval}
+                          onChange={(e) => setPollingInterval(parseInt(e.target.value) || 5)}
+                          min="1"
+                          max="60"
+                          step="1"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          {formatTranslation(t.updateIntervalHelp, {
+                            interval: pollingInterval,
+                            plural: pollingInterval !== 1 ? t.seconds : t.second
+                          })}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+            </div>
 
-              {mode === 'fade' && (
+            {/* Seção: Exibição */}
+            <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center">
+                <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                Exibição
+              </h3>
+              
+              <div className="space-y-4">
                 <div>
-                  <label htmlFor="fadeInterval" className="block text-sm font-medium text-gray-300 mb-2">
-                    {t.fadeInterval}
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={showTrackInfo}
+                      onChange={(e) => setShowTrackInfo(e.target.checked)}
+                      className="mr-2 accent-blue-400"
+                    />
+                    <span className="text-sm font-medium text-gray-300">
+                      {t.showTrackInfo}
+                    </span>
                   </label>
-                  <input
-                    type="number"
-                    id="fadeInterval"
-                    value={fadeInterval}
-                    onChange={(e) => setFadeInterval(parseInt(e.target.value) || 3)}
-                    min="1"
-                    max="30"
-                    step="1"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  />
                   <p className="text-xs text-gray-400 mt-1">
-                    {formatTranslation(t.fadeIntervalHelp, {
-                      interval: fadeInterval,
-                      plural: fadeInterval !== 1 ? t.seconds : t.second
-                    })}
+                    {t.showTrackInfoHelp}
                   </p>
                 </div>
-              )}
+
+                <div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={showLyrics}
+                      onChange={(e) => setShowLyrics(e.target.checked)}
+                      className="mr-2 accent-blue-400"
+                    />
+                    <span className="text-sm font-medium text-gray-300">
+                      {t.showLyrics}
+                    </span>
+                  </label>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {t.showLyricsHelp}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Coluna Direita - Configurações Avançadas */}
+          <div className="space-y-6">
+            {/* Seção: Lyrics (quando ativo) */}
+            {showLyrics && (
+              <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
+                <h3 className="font-semibold text-white mb-4 flex items-center">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
+                  {t.lyrics}
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t.backgroundMode}
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="backgroundMode"
+                          value="theme"
+                          checked={backgroundMode === 'theme'}
+                          onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                          className="mr-2 accent-blue-400"
+                        />
+                        <span className="text-sm text-gray-300">{t.themeColor}</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="backgroundMode"
+                          value="fixed"
+                          checked={backgroundMode === 'fixed'}
+                          onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                          className="mr-2 accent-blue-400"
+                        />
+                        <span className="text-sm text-gray-300">{t.fixedColor}</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="backgroundMode"
+                          value="cover"
+                          checked={backgroundMode === 'cover'}
+                          onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                          className="mr-2 accent-blue-400"
+                        />
+                        <span className="text-sm text-gray-300">{t.albumCover}</span>
+                      </label>
+                    </div>
+
+                    {backgroundMode === 'fixed' && (
+                      <div className="mt-3">
+                        <label htmlFor="fixedColor" className="block text-sm font-medium text-gray-300 mb-2">
+                          {t.fixedColor}
+                        </label>
+                        <input
+                          type="color"
+                          id="fixedColor"
+                          value={fixedColor}
+                          onChange={(e) => setFixedColor(e.target.value)}
+                          className="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Seção: Fallbacks */}
+            <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center">
+                <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                {t.fallbacks}
+              </h3>
+              <p className="text-xs text-gray-400 mb-4">
+                {t.fallbacksDescription}
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t.displayMode}
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="mode"
+                        value="static"
+                        checked={mode === 'static'}
+                        onChange={(e) => setMode(e.target.value as ScreensaverMode)}
+                        className="mr-2 accent-blue-400"
+                      />
+                      <span className="text-sm text-gray-300">{t.static}</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="mode"
+                        value="fade"
+                        checked={mode === 'fade'}
+                        onChange={(e) => setMode(e.target.value as ScreensaverMode)}
+                        className="mr-2 accent-blue-400"
+                      />
+                      <span className="text-sm text-gray-300">{t.fadeInOut}</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="mode"
+                        value="dvd"
+                        checked={mode === 'dvd'}
+                        onChange={(e) => setMode(e.target.value as ScreensaverMode)}
+                        className="mr-2 accent-blue-400"
+                      />
+                      <span className="text-sm text-gray-300">{t.dvdMovement}</span>
+                    </label>
+                  </div>
+                </div>
+
+                {mode === 'fade' && (
+                  <div>
+                    <label htmlFor="fadeInterval" className="block text-sm font-medium text-gray-300 mb-2">
+                      {t.fadeInterval}
+                    </label>
+                    <input
+                      type="number"
+                      id="fadeInterval"
+                      value={fadeInterval}
+                      onChange={(e) => setFadeInterval(parseInt(e.target.value) || 3)}
+                      min="1"
+                      max="30"
+                      step="1"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      {formatTranslation(t.fadeIntervalHelp, {
+                        interval: fadeInterval,
+                        plural: fadeInterval !== 1 ? t.seconds : t.second
+                      })}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Botão de Iniciar - Largura Total */}
+        <div className="mt-8">
           <button
             onClick={startScreensaver}
             disabled={isLoading}
@@ -438,36 +447,36 @@ export default function Home() {
               searchMode === 'auto' ? t.startScreensaver : t.searchAndStart
             )}
           </button>
+        </div>
 
-          {error && (
-            <div className="bg-red-900/30 border border-red-700 rounded-xl p-4">
-              <p className="text-red-300 text-sm">{error}</p>
-            </div>
-          )}
-
-          <div className="text-center">
-            <p className="text-xs text-gray-400">
-              {t.pressEscToExit}
-            </p>
+        {error && (
+          <div className="mt-4 bg-red-900/30 border border-red-700 rounded-xl p-4">
+            <p className="text-red-300 text-sm">{error}</p>
           </div>
+        )}
 
-          {/* Links de ajuda e créditos */}
-          <div className="flex justify-between items-center pt-4 border-t border-gray-600">
-            <button
-              onClick={() => setShowHowToUse(true)}
-              className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
-            >
-              {language === 'pt' ? 'Como usar' : 'How to use'}
-            </button>
-            <a
-              href="https://marcoswiendl.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
-            >
-              {language === 'pt' ? 'Desenvolvido por Marcos Wiendl' : 'Developed by Marcos Wiendl'}
-            </a>
-          </div>
+        <div className="text-center mt-4">
+          <p className="text-xs text-gray-400">
+            {t.pressEscToExit}
+          </p>
+        </div>
+
+        {/* Links de ajuda e créditos */}
+        <div className="flex justify-between items-center pt-4 mt-6 border-t border-gray-600">
+          <button
+            onClick={() => setShowHowToUse(true)}
+            className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
+          >
+            {language === 'pt' ? 'Como usar' : 'How to use'}
+          </button>
+          <a
+            href="https://marcoswiendl.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
+          >
+            {language === 'pt' ? 'Desenvolvido por Marcos Wiendl' : 'Developed by Marcos Wiendl'}
+          </a>
         </div>
       </div>
 

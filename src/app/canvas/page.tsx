@@ -133,7 +133,7 @@ export default function CanvasPage() {
   });
 
   // Lyrics sync state
-  const [currentLyricIndex, setCurrentLyricIndex] = useState(0);
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(-1); // -1 = aguardando primeira linha
   const lastLyricsTrackId = useRef<string | null>(null);
 
   // Sincronizar a linha da letra com o tempo do player do Spotify
@@ -141,20 +141,21 @@ export default function CanvasPage() {
     if (!showLyrics || !lyrics || !playerProgress) return;
     
     const currentTimeMs = playerProgress.progress;
-    let idx = 0;
+    let idx = -1; // -1 = aguardando primeira linha
     
+    // Encontrar a linha ativa
     for (let i = 0; i < lyrics.lines.length; i++) {
       const start = parseInt(lyrics.lines[i].startTimeMs);
-      const nextStart = i + 1 < lyrics.lines.length ? parseInt(lyrics.lines[i + 1].startTimeMs) : Infinity;
-      if (currentTimeMs >= start && currentTimeMs < nextStart) {
+      if (currentTimeMs >= start) {
         idx = i;
-        break;
+      } else {
+        break; // Parar na primeira linha que ainda não chegou
       }
     }
     
     // Log para depuração
     if (debugMode) {
-      addDebugLog('LYRICS', `Player time: ${(currentTimeMs/1000).toFixed(2)}s, idx: ${idx}, line: ${lyrics.lines[idx]?.words}`);
+      addDebugLog('LYRICS', `Player time: ${(currentTimeMs/1000).toFixed(2)}s, idx: ${idx}, line: ${idx >= 0 ? lyrics.lines[idx]?.words : 'waiting...'}`);
     }
     
     setCurrentLyricIndex(idx);
@@ -163,10 +164,23 @@ export default function CanvasPage() {
   // Resetar índice da letra ao trocar de música
   useEffect(() => {
     if (lyrics && playerProgress?.trackId !== lastLyricsTrackId.current) {
-      setCurrentLyricIndex(0);
+      setCurrentLyricIndex(-1); // Reset para aguardar primeira linha
       lastLyricsTrackId.current = playerProgress?.trackId || null;
     }
   }, [lyrics, playerProgress?.trackId]);
+
+  // Calcular progresso para animação de "..." quando aguardando primeira linha
+  const getWaitingProgress = () => {
+    if (!lyrics || currentLyricIndex >= 0 || !playerProgress) return 0;
+    
+    const currentTimeMs = playerProgress.progress;
+    const firstLineTime = parseInt(lyrics.lines[0]?.startTimeMs || '0');
+    
+    if (firstLineTime <= 0) return 0;
+    
+    const progress = Math.min(currentTimeMs / firstLineTime, 1);
+    return progress;
+  };
 
   // Initial debug log if active
   useEffect(() => {
@@ -452,33 +466,86 @@ export default function CanvasPage() {
         >
           {/* Exibir linha ativa e vizinhas centralizadas */}
           <div className="w-full max-w-4xl mx-auto text-center px-6">
+            {/* Debug info */}
+            {debugMode && (
+              <div className="text-white text-sm mb-4">
+                currentLyricIndex: {currentLyricIndex}, 
+                lyrics lines: {lyrics?.lines?.length || 0}, 
+                progress: {getWaitingProgress().toFixed(2)}
+              </div>
+            )}
+            
+            {/* Linhas da letra */}
             {lyrics.lines.map((line, idx) => {
-              if (Math.abs(idx - currentLyricIndex) > 3) return null;
+              // Quando aguardando primeira linha, mostrar apenas a linha 0
+              if (currentLyricIndex === -1) {
+                if (idx !== 0) return null;
+              } else {
+                // Estado normal - mostrar linhas próximas à atual
+                if (Math.abs(idx - currentLyricIndex) > 2) return null;
+              }
               
               const isActive = idx === currentLyricIndex;
               const isNext = idx === currentLyricIndex + 1;
               const isPrevious = idx === currentLyricIndex - 1;
-              const isNear = Math.abs(idx - currentLyricIndex) <= 2;
+              
+              // Estado de aguardando primeira linha - mostrar "..." no lugar da linha atual
+              if (currentLyricIndex === -1 && idx === 0) {
+                const progress = getWaitingProgress();
+                
+                if (debugMode) {
+                  console.log('🎯 Showing dots, progress:', progress);
+                }
+                
+                return (
+                  <div
+                    key={idx}
+                    className="mb-4 transition-all duration-500 ease-out transform text-white font-bold text-4xl md:text-6xl lg:text-7xl scale-110 opacity-100"
+                    style={{
+                      color: '#fff',
+                      textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)',
+                    }}
+                  >
+                    <span className="inline-block">
+                      <div className="flex items-center justify-center space-x-2">
+                        {[0, 1, 2].map((i) => (
+                          <div
+                            key={i}
+                            className={`w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full transition-all duration-700 ease-out transform
+                              ${progress >= (i + 1) * 0.25 
+                                ? 'bg-white scale-100 opacity-100' 
+                                : 'bg-white/30 scale-75 opacity-50'
+                              }
+                            `}
+                            style={{
+                              animationDelay: `${i * 200}ms`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </span>
+                  </div>
+                );
+              }
               
               return (
                 <div
                   key={idx}
-                  className={`mb-4 transition-all duration-500 ease-in-out transform will-change-transform
+                  className={`mb-4 transition-all duration-500 ease-out transform
                     ${isActive 
-                      ? 'text-white font-bold text-4xl md:text-6xl lg:text-7xl scale-110 opacity-100 translate-y-0'
-                      : isNext || isPrevious
-                      ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70 translate-y-1'
-                      : 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40 translate-y-2'
+                      ? 'text-white font-bold text-4xl md:text-6xl lg:text-7xl scale-110 opacity-100'
+                      : isNext
+                      ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70'
+                      : isPrevious
+                      ? 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40'
+                      : 'text-white font-normal text-lg md:text-xl lg:text-2xl scale-90 opacity-20'
                     }
-                    ${!isNear ? 'opacity-0 scale-90' : ''}
                   `}
                   style={{
                     color: '#fff',
                     textShadow: isActive 
                       ? '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
                       : '0 2px 4px rgba(0,0,0,0.6)',
-                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                    transform: `translateY(${(idx - currentLyricIndex) * 0.5}rem)`,
                   }}
                 >
                   <span className="inline-block">
