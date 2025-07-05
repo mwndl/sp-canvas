@@ -47,7 +47,7 @@ export const useCanvasParams = (): CanvasParams => {
   // Lyrics params
   const showLyrics = searchParams.get('lyrics') !== 'false';
   const lyricsMode = (searchParams.get('lyricsMode') as '5lines' | 'left') || '5lines';
-  const backgroundMode = (searchParams.get('backgroundMode') as 'theme' | 'fixed' | 'cover') || 'theme';
+  const backgroundMode = (searchParams.get('bgMode') as 'theme' | 'fixed' | 'cover') || 'theme';
   const fixedColor = searchParams.get('bgColor') || '#000000';
 
   const t = getTranslation(language);

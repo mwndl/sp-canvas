@@ -95,22 +95,31 @@ export const FallbackDisplay = ({
 
   // Determinar background baseado no modo
   const getBackgroundStyle = () => {
+    console.log('🎨 FallbackDisplay - Background Mode:', lyricsBgMode);
+    console.log('🎨 FallbackDisplay - Track:', track?.name);
+    console.log('🎨 FallbackDisplay - Album Image:', track?.album.images[0]?.url);
+    console.log('🎨 FallbackDisplay - Lyrics Colors:', lyricsColors);
+    
     if (lyricsBgMode === 'theme' && lyricsColors?.background) {
+      console.log('🎨 Using theme color:', `#${(lyricsColors.background >>> 0).toString(16).padStart(6, '0')}`);
       return {
         background: `#${(lyricsColors.background >>> 0).toString(16).padStart(6, '0')}`,
         transition: 'background 0.5s',
       };
     } else if (lyricsBgMode === 'fixed' && lyricsBgColor) {
+      console.log('🎨 Using fixed color:', lyricsBgColor);
       return {
         background: lyricsBgColor,
         transition: 'background 0.5s',
       };
     } else if (lyricsBgMode === 'cover' && track?.album.images[0]?.url) {
+      console.log('🎨 Using album cover:', track.album.images[0].url);
       return {
         background: `url(${track.album.images[0].url}) center/cover no-repeat`,
         transition: 'background 0.5s',
       };
     }
+    console.log('🎨 Using fallback black color');
     return {
       background: '#000000',
       transition: 'background 0.5s',
