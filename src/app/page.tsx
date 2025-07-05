@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getTranslation, formatTranslation, type Language } from '../lib/i18n';
+import HowToUseModal from '../components/HowToUseModal';
 
 type ScreensaverMode = 'static' | 'fade' | 'dvd';
 
@@ -17,6 +18,7 @@ export default function Home() {
   const [trackId, setTrackId] = useState('');
   const [showTrackInfo, setShowTrackInfo] = useState(true);
   const [language, setLanguage] = useState<Language>('en');
+  const [showHowToUse, setShowHowToUse] = useState(false);
   const router = useRouter();
 
   const t = getTranslation(language);
@@ -74,7 +76,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-gray-700">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-gray-700 relative">
         {/* Language Selector */}
         <div className="absolute top-4 right-4">
           <select
@@ -323,8 +325,33 @@ export default function Home() {
               {t.pressEscToExit}
             </p>
           </div>
+
+          {/* Links de ajuda e créditos */}
+          <div className="flex justify-between items-center pt-4 border-t border-gray-600">
+            <button
+              onClick={() => setShowHowToUse(true)}
+              className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
+            >
+              {language === 'pt' ? 'Como usar' : 'How to use'}
+            </button>
+            <a
+              href="https://marcoswiendl.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
+            >
+              {language === 'pt' ? 'Desenvolvido por Marcos Wiendl' : 'Developed by Marcos Wiendl'}
+            </a>
+          </div>
         </div>
       </div>
+
+      {/* Modal de Como Usar */}
+      <HowToUseModal
+        isOpen={showHowToUse}
+        onClose={() => setShowHowToUse(false)}
+        language={language}
+      />
     </div>
   );
 }
