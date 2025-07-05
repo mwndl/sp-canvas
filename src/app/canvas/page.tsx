@@ -435,7 +435,7 @@ export default function CanvasPage() {
       {/* Lyrics Overlay */}
       {showLyrics && lyrics && (
         <div
-          className="absolute inset-0 flex flex-col items-start justify-start z-20 pointer-events-none select-none"
+          className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none select-none"
           style={{
             background:
               lyricsBgMode === 'theme' && lyricsColors?.background
@@ -450,23 +450,40 @@ export default function CanvasPage() {
             transition: 'background 0.5s',
           }}
         >
-          {/* Exibir linha ativa e vizinhas no topo */}
-          <div className="w-full max-w-3xl mt-12 mx-auto text-center px-4">
+          {/* Exibir linha ativa e vizinhas centralizadas */}
+          <div className="w-full max-w-4xl mx-auto text-center px-6">
             {lyrics.lines.map((line, idx) => {
-              if (Math.abs(idx - currentLyricIndex) > 2) return null;
+              if (Math.abs(idx - currentLyricIndex) > 3) return null;
+              
+              const isActive = idx === currentLyricIndex;
+              const isNext = idx === currentLyricIndex + 1;
+              const isPrevious = idx === currentLyricIndex - 1;
+              const isNear = Math.abs(idx - currentLyricIndex) <= 2;
+              
               return (
                 <div
                   key={idx}
-                  className={`mb-2 break-words transition-all duration-300
-                    ${idx === currentLyricIndex
-                      ? 'text-white font-bold text-3xl md:text-5xl scale-110'
-                      : 'text-white font-normal text-2xl md:text-3xl scale-100'}
+                  className={`mb-4 transition-all duration-500 ease-in-out transform will-change-transform
+                    ${isActive 
+                      ? 'text-white font-bold text-4xl md:text-6xl lg:text-7xl scale-110 opacity-100 translate-y-0'
+                      : isNext || isPrevious
+                      ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70 translate-y-1'
+                      : 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40 translate-y-2'
+                    }
+                    ${!isNear ? 'opacity-0 scale-90' : ''}
                   `}
                   style={{
                     color: '#fff',
+                    textShadow: isActive 
+                      ? '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
+                      : '0 2px 4px rgba(0,0,0,0.6)',
+                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    transform: `translateY(${(idx - currentLyricIndex) * 0.5}rem)`,
                   }}
                 >
-                  {line.words}
+                  <span className="inline-block">
+                    {line.words}
+                  </span>
                 </div>
               );
             })}
