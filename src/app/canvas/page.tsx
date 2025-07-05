@@ -1,5 +1,21 @@
 'use client';
 
+/**
+ * SpotSaver - Spotify Screensaver
+ * 
+ * Query Parameters:
+ * - mode: 'static' | 'fade' | 'dvd' - Screensaver mode
+ * - fade: number - Fade interval in ms (default: 3000)
+ * - auto: 'true' | 'false' - Auto update (default: true)
+ * - poll: number - Polling interval in ms (default: 5000)
+ * - info: 'true' | 'false' - Show track info (default: true)
+ * - lang: 'en' | 'pt' - Language (default: 'en')
+ * - debug: 'true' | 'false' - Debug mode (default: false)
+ * - timeout: number - Video timeout in ms before fallback (default: 1000)
+ * - trackid: string - Specific track ID to display
+ * - log_limit: number - Debug log limit (default: 50, max: 200)
+ */
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getTranslation, type Language } from '../../lib/i18n';
@@ -53,12 +69,12 @@ export default function CanvasPage() {
   const searchParams = useSearchParams();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Configurações de debug
+  // Debug settings
   const defaultLogLimit = 50;
   const logLimit = parseInt(searchParams.get('log_limit') || defaultLogLimit.toString());
-  const MAX_DEBUG_LOGS = Math.max(10, Math.min(200, logLimit)); // Limite entre 10 e 200 logs
+  const MAX_DEBUG_LOGS = Math.max(10, Math.min(200, logLimit)); // Limit between 10 and 200 logs
   
-  // Pegar modo do screensaver da URL (usando siglas)
+  // Get screensaver mode from URL
   const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
   const fadeInterval = parseInt(searchParams.get('fade') || '3000');
   const autoUpdate = searchParams.get('auto') !== 'false';
@@ -66,15 +82,17 @@ export default function CanvasPage() {
   const showTrackInfo = searchParams.get('info') !== 'false';
   const language = (searchParams.get('lang') as Language) || 'en';
   const debugMode = searchParams.get('debug') === 'true';
+  const videoTimeout = parseInt(searchParams.get('timeout') || '1000');
 
   const t = getTranslation(language);
 
-  // Log inicial do debug se estiver ativo
+  // Initial debug log if active
   useEffect(() => {
     if (debugMode) {
-      addDebugLog('CONFIG', `Debug ativado - Limite de logs: ${MAX_DEBUG_LOGS}`);
+      addDebugLog('CONFIG', `Debug enabled - Log limit: ${MAX_DEBUG_LOGS}`);
+      addDebugLog('CONFIG', `Video timeout: ${videoTimeout}ms`);
     }
-  }, [debugMode, MAX_DEBUG_LOGS]);
+  }, [debugMode, MAX_DEBUG_LOGS, videoTimeout]);
 
   // Função para adicionar logs de debug
   const addDebugLog = useCallback((type: string, message: string) => {
@@ -109,15 +127,15 @@ export default function CanvasPage() {
       let url = '/api/spotify/canvas';
       if (specificTrackId) {
         url += `?trackUri=spotify:track:${specificTrackId}`;
-        console.log('🎯 Buscando Track ID específico:', specificTrackId);
-        console.log('🔗 URL da requisição:', url);
+        console.log('🎯 Searching for specific Track ID:', specificTrackId);
+        console.log('🔗 Request URL:', url);
         if (debugMode) {
-          addDebugLog('API', `Buscando Track ID específico: ${specificTrackId}`);
+          addDebugLog('API', `Searching for specific Track ID: ${specificTrackId}`);
         }
       } else {
-        console.log('🎵 Buscando música atual');
+        console.log('🎵 Searching for current track');
         if (debugMode) {
-          addDebugLog('API', 'Buscando música atual');
+          addDebugLog('API', 'Searching for current track');
         }
       }
 
@@ -126,26 +144,26 @@ export default function CanvasPage() {
       if (!response.ok) {
         const errorData = await response.json();
         
-        // Se não há música tocando E não é um Track ID específico, não é um erro
+        // If no track is playing AND it's not a specific Track ID, it's not an error
         if (errorData.error === 'No track currently playing' && !specificTrackId) {
           setTrack(null);
           setCanvasData(null);
           setLastTrackUri(null);
           setError(null);
-          console.log('⏰ Nenhuma música tocando - mostrando relógio');
+          console.log('⏰ No track playing - showing clock');
           if (debugMode) {
-            addDebugLog('INFO', 'Nenhuma música tocando - mostrando relógio');
+            addDebugLog('INFO', 'No track playing - showing clock');
           }
           return;
         }
         
-        // Se é um Track ID específico e deu erro, mostrar o erro
+        // If it's a specific Track ID and there's an error, show the error
         if (specificTrackId) {
-          console.error('❌ Erro ao buscar Track ID específico:', errorData.error);
+          console.error('❌ Error searching for specific Track ID:', errorData.error);
           if (debugMode) {
-            addDebugLog('ERROR', `Erro ao buscar Track ID específico: ${errorData.error}`);
+            addDebugLog('ERROR', `Error searching for specific Track ID: ${errorData.error}`);
           }
-          setError(`Erro ao buscar música: ${errorData.error}`);
+          setError(`Error searching for track: ${errorData.error}`);
           return;
         }
         
@@ -162,17 +180,17 @@ export default function CanvasPage() {
         setLastTrackUri(currentTrackUri);
         setCurrentCanvasIndex(0); // Reset canvas index
         setVideoFailed(false); // Reset video failure state
-        setError(null); // Limpar qualquer erro anterior
-        console.log('🎵 Nova música detectada:', data.track?.name || 'Track ID');
+        setError(null); // Clear any previous error
+        console.log('🎵 New track detected:', data.track?.name || 'Track ID');
         if (debugMode) {
-          addDebugLog('INFO', `Nova música detectada: ${data.track?.name || 'Track ID'}`);
-          addDebugLog('INFO', `Canvas encontrados: ${data.canvas?.canvasesList?.length || 0}`);
+          addDebugLog('INFO', `New track detected: ${data.track?.name || 'Track ID'}`);
+          addDebugLog('INFO', `Canvas found: ${data.canvas?.canvasesList?.length || 0}`);
         }
       }
     } catch (err) {
       console.error('Error fetching canvas:', err);
       if (debugMode) {
-        addDebugLog('ERROR', `Erro ao buscar canvas: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
+        addDebugLog('ERROR', `Error fetching canvas: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -180,16 +198,16 @@ export default function CanvasPage() {
     }
   };
 
-  // Função para tentar reproduzir o vídeo
+  // Function to try to play the video
   const tryPlayVideo = () => {
     if (videoRef.current) {
       const video = videoRef.current;
       
-      // Verificar se o vídeo ainda está no DOM
+      // Check if video is still in DOM
       if (!document.contains(video)) {
-        console.log('⚠️ Vídeo removido do DOM - abortando reprodução');
+        console.log('⚠️ Video removed from DOM - aborting playback');
         if (debugMode) {
-          addDebugLog('WARNING', 'Vídeo removido do DOM - abortando reprodução');
+          addDebugLog('WARNING', 'Video removed from DOM - aborting playback');
         }
         return;
       }
@@ -198,27 +216,27 @@ export default function CanvasPage() {
       video.currentTime = 0;
       video.load();
       
-      // Timer de 3 segundos para verificar se o vídeo iniciou
+      // Timer to check if the video started (customizable via timeout query param)
       const timeoutId = setTimeout(() => {
-        // Verificar novamente se o vídeo ainda está no DOM
+        // Check again if video is still in DOM
         if (!document.contains(video)) {
-          console.log('⚠️ Vídeo removido do DOM durante timeout');
+          console.log('⚠️ Video removed from DOM during timeout');
           if (debugMode) {
-            addDebugLog('WARNING', 'Vídeo removido do DOM durante timeout');
+            addDebugLog('WARNING', 'Video removed from DOM during timeout');
           }
           return;
         }
         
-        if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA ou vídeo pausado
-          console.log(`⏰ Vídeo não iniciou após 3s - readyState: ${video.readyState}, paused: ${video.paused}`);
+        if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA or video paused
+          console.log(`⏰ Video didn't start after ${videoTimeout}ms - readyState: ${video.readyState}, paused: ${video.paused}`);
           if (debugMode) {
-            addDebugLog('TIMEOUT', `Vídeo não iniciou após 3s - readyState: ${video.readyState}, paused: ${video.paused}`);
+            addDebugLog('TIMEOUT', `Video didn't start after ${videoTimeout}ms - readyState: ${video.readyState}, paused: ${video.paused}`);
           }
           setVideoFailed(true);
         }
-      }, 3000);
+      }, videoTimeout);
       
-      // Limpar timeout se o vídeo iniciar com sucesso
+      // Clear timeout if the video starts playing
       const handleCanPlay = () => {
         clearTimeout(timeoutId);
         video.removeEventListener('canplay', handleCanPlay);
@@ -226,38 +244,38 @@ export default function CanvasPage() {
       
       video.addEventListener('canplay', handleCanPlay);
       
-      // Tentar reproduzir
+      // Try to play
       const playPromise = video.play();
       
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            // Verificar se o vídeo ainda está no DOM
+            // Check if video is still in DOM
             if (!document.contains(video)) {
-              console.log('⚠️ Vídeo removido do DOM após iniciar reprodução');
+              console.log('⚠️ Video removed from DOM after starting playback');
               if (debugMode) {
-                addDebugLog('WARNING', 'Vídeo removido do DOM após iniciar reprodução');
+                addDebugLog('WARNING', 'Video removed from DOM after starting playback');
               }
               return;
             }
-            console.log('✅ Vídeo reproduzindo com sucesso');
+            console.log('✅ Video playing successfully');
             if (debugMode) {
-              addDebugLog('SUCCESS', 'Vídeo reproduzindo com sucesso');
+              addDebugLog('SUCCESS', 'Video playing successfully');
             }
             setVideoFailed(false);
           })
           .catch((error) => {
-            // Verificar se o erro é devido à remoção do DOM
+            // Check if error is due to DOM removal
             if (error.message && error.message.includes('removed from the document')) {
-              console.log('⚠️ Vídeo removido do DOM durante reprodução - ignorando erro');
+              console.log('⚠️ Video removed from DOM during playback - ignoring error');
               if (debugMode) {
-                addDebugLog('WARNING', 'Vídeo removido do DOM durante reprodução - ignorando erro');
+                addDebugLog('WARNING', 'Video removed from DOM during playback - ignoring error');
               }
               return;
             }
-            console.error('❌ Falha ao reproduzir vídeo:', error);
+            console.error('❌ Failed to play video:', error);
             if (debugMode) {
-              addDebugLog('ERROR', `Falha ao reproduzir vídeo: ${error.message || error}`);
+              addDebugLog('ERROR', `Failed to play video: ${error.message || error}`);
             }
             handleVideoFailure();
           });
@@ -265,51 +283,51 @@ export default function CanvasPage() {
     }
   };
 
-  // Função para lidar com falha do vídeo
+  // Function to handle video failure
   const handleVideoFailure = () => {
-    console.log('❌ Falha no vídeo detectada - indo para fallback');
+    console.log('❌ Video failure detected - going to fallback');
     if (debugMode) {
-      addDebugLog('FAILURE', 'Falha no vídeo detectada - indo para fallback');
+      addDebugLog('FAILURE', 'Video failure detected - going to fallback');
     }
       setVideoFailed(true);
   };
 
-  // Event listeners para o vídeo
+  // Event listeners for video
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleError = () => {
-      console.error('❌ Erro no vídeo:', video.error);
+      console.error('❌ Video error:', video.error);
       if (debugMode) {
-        addDebugLog('ERROR', `Erro no vídeo: ${video.error?.message || 'Erro desconhecido'}`);
+        addDebugLog('ERROR', `Video error: ${video.error?.message || 'Unknown error'}`);
       }
       handleVideoFailure();
     };
 
     const handleLoadStart = () => {
-      console.log('🔄 Iniciando carregamento do vídeo...');
+      console.log('🔄 Starting video loading...');
       if (debugMode) {
-        addDebugLog('LOAD', 'Iniciando carregamento do vídeo...');
+        addDebugLog('LOAD', 'Starting video loading...');
       }
     };
 
     const handleCanPlay = () => {
-      console.log('✅ Vídeo pronto para reprodução');
+      console.log('✅ Video ready for playback');
       if (debugMode) {
-        addDebugLog('READY', 'Vídeo pronto para reprodução');
+        addDebugLog('READY', 'Video ready for playback');
       }
     };
 
     const handleStalled = () => {
-      console.log('⚠️ Vídeo travou - tentando recuperar...');
+      console.log('⚠️ Video stalled - trying to recover...');
       if (debugMode) {
-        addDebugLog('STALLED', 'Vídeo travou - tentando recuperar...');
+        addDebugLog('STALLED', 'Video stalled - trying to recover...');
       }
       setTimeout(() => {
         if (video.readyState < 3) { // HAVE_FUTURE_DATA
           if (debugMode) {
-            addDebugLog('FAILURE', 'Vídeo não recuperou após stall');
+            addDebugLog('FAILURE', 'Video didn\'t recover after stall');
           }
           handleVideoFailure();
         }
@@ -317,14 +335,14 @@ export default function CanvasPage() {
     };
 
     const handleSuspend = () => {
-      console.log('⚠️ Carregamento do vídeo suspenso');
+      console.log('⚠️ Video loading suspended');
       if (debugMode) {
-        addDebugLog('SUSPEND', 'Carregamento do vídeo suspenso');
+        addDebugLog('SUSPEND', 'Video loading suspended');
       }
       setTimeout(() => {
         if (video.readyState < 2) { // HAVE_CURRENT_DATA
           if (debugMode) {
-            addDebugLog('FAILURE', 'Vídeo não recuperou após suspend');
+            addDebugLog('FAILURE', 'Video didn\'t recover after suspend');
           }
           handleVideoFailure();
         }
@@ -332,22 +350,22 @@ export default function CanvasPage() {
     };
 
     const handleAbort = () => {
-      console.log('❌ Carregamento do vídeo abortado');
+      console.log('❌ Video loading aborted');
       if (debugMode) {
-        addDebugLog('ABORT', 'Carregamento do vídeo abortado');
+        addDebugLog('ABORT', 'Video loading aborted');
       }
       handleVideoFailure();
     };
 
     const handleEmptied = () => {
-      console.log('⚠️ Vídeo esvaziado - possivel falha');
+      console.log('⚠️ Video emptied - possible failure');
       if (debugMode) {
-        addDebugLog('EMPTIED', 'Vídeo esvaziado - possivel falha');
+        addDebugLog('EMPTIED', 'Video emptied - possible failure');
       }
       setTimeout(() => {
         if (video.readyState === 0) { // HAVE_NOTHING
           if (debugMode) {
-            addDebugLog('FAILURE', 'Vídeo não recuperou após emptied');
+            addDebugLog('FAILURE', 'Video didn\'t recover after emptied');
           }
           handleVideoFailure();
         }
@@ -373,26 +391,26 @@ export default function CanvasPage() {
     };
   }, []);
 
-  // Polling para verificar mudanças na música
+  // Polling to check for track changes
   useEffect(() => {
     const trackId = searchParams.get('trackid');
     
-    // Só fazer polling se autoUpdate estiver ativado E não for uma faixa específica
+    // Only do polling if autoUpdate is enabled AND it's not a specific track
     if (autoUpdate && !trackId) {
-      console.log(`🔄 Iniciando polling automático para música atual (a cada ${pollingInterval/1000}s)`);
-      // Verificar no intervalo configurado se a música mudou
+      console.log(`🔄 Starting automatic polling for current track (every ${pollingInterval/1000}s)`);
+      // Check at configured interval if track changed
       pollingIntervalRef.current = setInterval(() => {
         fetchCanvas();
       }, pollingInterval);
 
       return () => {
         if (pollingIntervalRef.current) {
-          console.log('⏹️ Parando polling automático');
+          console.log('⏹️ Stopping automatic polling');
           clearInterval(pollingIntervalRef.current);
         }
       };
     } else if (trackId) {
-      console.log('🎯 Faixa específica detectada - polling desabilitado');
+      console.log('🎯 Specific track detected - polling disabled');
     }
   }, [autoUpdate, searchParams, lastTrackUri]);
 
@@ -421,19 +439,19 @@ export default function CanvasPage() {
     }
   }, [canvasData]);
 
-  // Tentar reproduzir vídeo quando canvas mudar
+  // Try to play video when canvas changes
   useEffect(() => {
     if (canvasData && canvasData.canvasesList.length > 0 && !videoFailed) {
-      // Reset video failure state quando mudar de canvas
+      // Reset video failure state when changing canvas
       setVideoFailed(false);
       if (debugMode) {
-        addDebugLog('CANVAS', `Mudando para canvas ${currentCanvasIndex + 1}/${canvasData.canvasesList.length}`);
+        addDebugLog('CANVAS', `Switching to canvas ${currentCanvasIndex + 1}/${canvasData.canvasesList.length}`);
       }
       
-      // Usar um delay maior para garantir que o DOM foi completamente atualizado
-      // e evitar conflitos com a remoção/adição de elementos
+      // Use a longer delay to ensure DOM is completely updated
+      // and avoid conflicts with element removal/addition
       const timeoutId = setTimeout(() => {
-        // Verificar se ainda estamos no mesmo canvas antes de tentar reproduzir
+        // Check if we're still on the same canvas before trying to play
         if (videoRef.current && document.contains(videoRef.current)) {
           tryPlayVideo();
         }
@@ -443,34 +461,34 @@ export default function CanvasPage() {
     }
   }, [canvasData, currentCanvasIndex, addDebugLog]);
 
-  // Monitorar mudanças de estado para debug
+  // Monitor state changes for debug
   useEffect(() => {
     if (debugMode) {
       if (!canvasData) {
-        addDebugLog('FALLBACK', 'Nenhum canvas disponível');
+        addDebugLog('FALLBACK', 'No canvas available');
       } else if (!canvasData.canvasesList.length) {
-        addDebugLog('FALLBACK', 'Lista de canvas vazia');
+        addDebugLog('FALLBACK', 'Canvas list empty');
       } else if (videoFailed) {
-        addDebugLog('FALLBACK', 'Vídeo falhou - mostrando capa do álbum');
+        addDebugLog('FALLBACK', 'Video failed - showing album cover');
       } else if (!track) {
-        addDebugLog('FALLBACK', 'Nenhuma música - mostrando relógio');
+        addDebugLog('FALLBACK', 'No track - showing clock');
       }
     }
   }, [debugMode, canvasData, videoFailed, track, addDebugLog]);
 
-  // Efeito para modo fade in/out com movimento
+  // Effect for fade in/out with movement
   useEffect(() => {
     if (mode === 'fade' && (!canvasData?.canvasesList.length || !track)) {
       const interval = setInterval(() => {
         setFadeOpacity(prev => {
           if (prev === 1) {
-            // Fade out na posição atual
+            // Fade out at current position 
             setTimeout(() => {
-              // Gerar nova posição aleatória
-              const newX = Math.random() * 70 + 15; // 15% a 85% da tela
-              const newY = Math.random() * 70 + 15; // 15% a 85% da tela
-              setFadePosition({ x: newX, y: newY });
-              setFadeOpacity(1); // Fade in na nova posição
+                        // Generate new random position
+          const newX = Math.random() * 70 + 15; // 15% to 85% of screen
+          const newY = Math.random() * 70 + 15; // 15% to 85% of screen
+          setFadePosition({ x: newX, y: newY });
+          setFadeOpacity(1); // Fade in at new position
             }, 500);
             return 0;
           } else {
@@ -483,7 +501,7 @@ export default function CanvasPage() {
     }
   }, [mode, canvasData, fadeInterval, track]);
 
-  // Efeito para modo DVD
+  // Effect for DVD mode
   useEffect(() => {
     if (mode === 'dvd' && (!canvasData?.canvasesList.length || !track)) {
       const interval = setInterval(() => {
@@ -493,46 +511,46 @@ export default function CanvasPage() {
           let newVelX = dvdVelocity.x;
           let newVelY = dvdVelocity.y;
           
-          // Calcular limites baseados no tamanho real da tela e da div
+          // Calculate limits based on actual screen and div size
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
           
-          // Obter tamanho real da div se disponível
+          // Get actual div size if available
           const fallbackElement = fallbackRef.current;
           const divWidth = fallbackElement ? fallbackElement.offsetWidth : 256;
           const divHeight = fallbackElement ? fallbackElement.offsetHeight : 170;
           
-          // Converter para porcentagem da viewport
+          // Convert to viewport percentage
           const divWidthPercent = (divWidth / viewportWidth) * 100;
           const divHeightPercent = (divHeight / viewportHeight) * 100;
           
-          // Ajustar limites baseados no tipo de conteúdo
-          // Para capa do álbum (mais alta), usar limites mais conservadores
-          // Para relógio (mais baixo), usar limites mais amplos
+          // Adjust limits based on content type
+          // For album cover (taller), use more conservative limits
+          // For clock (shorter), use wider limits
           const isAlbumCover = track && track.album.images[0];
-          const widthMultiplier = isAlbumCover ? 1.2 : 1.0; // Aumentar margem para capa do álbum
-          const heightMultiplier = isAlbumCover ? 1.1 : 1.0; // Aumentar margem para capa do álbum
+          const widthMultiplier = isAlbumCover ? 1.2 : 1.0; // Increase margin for album cover
+          const heightMultiplier = isAlbumCover ? 1.1 : 1.0; // Increase margin for album cover
           
-          // Calcular limites onde a borda da div toca a borda da tela
-          const leftLimit = (divWidthPercent * widthMultiplier) / 2;   // Centro da div quando borda esquerda toca a tela
-          const rightLimit = 100 - ((divWidthPercent * widthMultiplier) / 2); // Centro da div quando borda direita toca a tela
-          const topLimit = (divHeightPercent * heightMultiplier) / 2;    // Centro da div quando borda superior toca a tela
-          const bottomLimit = 100 - ((divHeightPercent * heightMultiplier) / 2); // Centro da div quando borda inferior toca a tela
+          // Calculate limits where div border touches screen border
+          const leftLimit = (divWidthPercent * widthMultiplier) / 2;   // Center of div when left border touches screen
+          const rightLimit = 100 - ((divWidthPercent * widthMultiplier) / 2); // Center of div when right border touches screen
+          const topLimit = (divHeightPercent * heightMultiplier) / 2;    // Center of div when top border touches screen
+          const bottomLimit = 100 - ((divHeightPercent * heightMultiplier) / 2); // Center of div when bottom border touches screen
           
-          // Bater nas bordas - inverte velocidade quando toca o limite
+          // Bounce off edges - reverse velocity when touching limit
           if (newX <= leftLimit || newX >= rightLimit) {
             newVelX = -dvdVelocity.x;
-            // Corrigir posição para não passar do limite
+            // Correct position to not exceed limit
             newX = newX <= leftLimit ? leftLimit : rightLimit;
           }
           
           if (newY <= topLimit || newY >= bottomLimit) {
             newVelY = -dvdVelocity.y;
-            // Corrigir posição para não passar do limite
+            // Correct position to not exceed limit
             newY = newY <= topLimit ? topLimit : bottomLimit;
           }
           
-          // Atualizar velocidade
+          // Update velocity
           setDvdVelocity({ x: newVelX, y: newVelY });
           
           return {
@@ -540,7 +558,7 @@ export default function CanvasPage() {
             y: newY
           };
         });
-      }, 50); // Atualizar a cada 50ms para movimento suave
+      }, 50); // Update every 50ms for smooth movement
 
       return () => clearInterval(interval);
     }
@@ -561,7 +579,7 @@ export default function CanvasPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-xl">
-          {language === 'pt' ? 'Carregando Canvas...' : 'Loading Canvas...'}
+          Loading Canvas...
         </div>
       </div>
     );
@@ -572,21 +590,21 @@ export default function CanvasPage() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-center">
           <div className="text-xl mb-4">
-            {language === 'pt' ? 'Erro ao carregar Canvas' : 'Error loading Canvas'}
+            Error loading Canvas
           </div>
           <div className="text-gray-400 mb-4">{error}</div>
           <button
             onClick={() => router.push('/')}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
           >
-            {language === 'pt' ? 'Voltar' : 'Back'}
+            Back
           </button>
         </div>
       </div>
     );
   }
 
-  // Mostrar capa do álbum se não há canvas OU se o vídeo falhou OU se não há música
+  // Show album cover if no canvas OR if video failed OR if no track
   if (!canvasData || !canvasData.canvasesList.length || videoFailed || !track) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
@@ -620,7 +638,7 @@ export default function CanvasPage() {
             </div>
           </div>
         ) : (
-          // Relógio quando não há música
+          // Clock when no track is playing
           <div 
             ref={fallbackRef}
             className={`text-white text-center transition-opacity duration-1000 transition-all duration-500 ${
@@ -634,20 +652,20 @@ export default function CanvasPage() {
             }}
           >
             <div className="space-y-4">
-              {/* Relógio simples */}
+              {/* Simple clock */}
               <div className="text-center">
                 <div className="text-8xl font-bold font-mono">
-                  {currentTime.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', { 
+                  {currentTime.toLocaleTimeString('en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit',
                     hour12: false 
                   })}
                 </div>
               </div>
-              {/* Data */}
+              {/* Date */}
               <div>
                 <h2 className="text-2xl font-bold mb-2">
-                  {currentTime.toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US', { 
+                  {currentTime.toLocaleDateString('en-US', { 
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -704,7 +722,7 @@ export default function CanvasPage() {
                 </div>
               ))}
               {debugLogs.length === 0 && (
-                <div className="text-gray-400 italic">Nenhum log disponível</div>
+                <div className="text-gray-400 italic">No logs available</div>
               )}
             </div>
           </div>
@@ -730,15 +748,15 @@ export default function CanvasPage() {
         disablePictureInPicture
         disableRemotePlayback
         onLoadStart={() => {
-          console.log('🔄 Carregando vídeo...');
+          console.log('🔄 Loading video...');
           if (debugMode) {
-            addDebugLog('LOAD', 'Iniciando carregamento do vídeo...');
+            addDebugLog('LOAD', 'Starting video loading...');
           }
         }}
         onCanPlay={() => {
-          console.log('✅ Vídeo pronto');
+          console.log('✅ Video ready');
           if (debugMode) {
-            addDebugLog('READY', 'Vídeo pronto para reprodução');
+            addDebugLog('READY', 'Video ready for playback');
           }
         }}
         onError={() => handleVideoFailure()}
@@ -831,7 +849,7 @@ export default function CanvasPage() {
               </div>
             ))}
             {debugLogs.length === 0 && (
-              <div className="text-gray-400 italic">Nenhum log disponível</div>
+              <div className="text-gray-400 italic">No logs available</div>
             )}
           </div>
         </div>
