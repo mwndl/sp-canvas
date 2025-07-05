@@ -16,7 +16,7 @@
  * - log_limit: number - Debug log limit (default: 50, max: 200)
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDebugLogs } from '../../hooks/useDebugLogs';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
@@ -31,31 +31,7 @@ import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
 import { FallbackDisplay } from '../../components/FallbackDisplay';
 
-interface Track {
-  id: string;
-  name: string;
-  artists: Array<{ name: string }>;
-  album: {
-    name: string;
-    images: Array<{ url: string }>;
-  };
-  uri: string;
-}
 
-interface CanvasData {
-  canvasesList: Array<{
-    id: string;
-    canvasUrl: string;
-    trackUri: string;
-    artist?: {
-      artistUri: string;
-      artistName: string;
-      artistImgUrl: string;
-    };
-    otherId: string;
-    canvasUri: string;
-  }>;
-}
 
 export default function CanvasPage() {
   const [videoFailed, setVideoFailed] = useState(false);
@@ -73,8 +49,7 @@ export default function CanvasPage() {
     debugMode,
     videoTimeout,
     trackId,
-    maxDebugLogs,
-    t
+    maxDebugLogs
   } = useCanvasParams();
 
   // Debug logging hook
@@ -100,11 +75,7 @@ export default function CanvasPage() {
     canvasData,
     isLoading,
     error,
-    lastTrackUri,
-    setTrack,
-    setCanvasData,
-    setError,
-    setLastTrackUri
+    lastTrackUri
   } = useCanvasFetch({
     autoUpdate,
     pollingInterval,
@@ -117,7 +88,7 @@ export default function CanvasPage() {
   const currentTime = useClock();
 
   // Canvas rotation hook
-  const { currentCanvasIndex, setCurrentCanvasIndex } = useCanvasRotation({
+  const { currentCanvasIndex } = useCanvasRotation({
     canvasData,
     lastTrackUri
   });
@@ -137,10 +108,6 @@ export default function CanvasPage() {
       addDebugLog('CONFIG', `Video timeout: ${videoTimeout}ms`);
     }
   }, [debugMode, maxDebugLogs, videoTimeout, addDebugLog]);
-
-
-
-
 
   // Event listeners for video
   useEffect(() => {

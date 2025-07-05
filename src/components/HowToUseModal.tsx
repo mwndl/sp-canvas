@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { getTranslation, type Language } from '../lib/i18n';
+import { type Language } from '../lib/i18n';
 
 interface HowToUseModalProps {
   isOpen: boolean;
@@ -10,7 +9,6 @@ interface HowToUseModalProps {
 }
 
 export default function HowToUseModal({ isOpen, onClose, language }: HowToUseModalProps) {
-  const t = getTranslation(language);
 
   if (!isOpen) return null;
 

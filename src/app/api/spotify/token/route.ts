@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getToken } from '@/lib/spotifyAuthService.js';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const accessToken = await getToken();
     
