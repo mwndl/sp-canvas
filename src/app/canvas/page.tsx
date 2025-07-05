@@ -23,6 +23,8 @@ import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useCanvasParams } from '../../hooks/useCanvasParams';
 import { useKeyboardControls } from '../../hooks/useKeyboardControls';
 import { DebugPanel } from '../../components/DebugPanel';
+import { LoadingScreen } from '../../components/LoadingScreen';
+import { ErrorScreen } from '../../components/ErrorScreen';
 
 interface Track {
   id: string;
@@ -465,32 +467,11 @@ export default function CanvasPage() {
 
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">
-          Loading Canvas...
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="text-xl mb-4">
-            Error loading Canvas
-          </div>
-          <div className="text-gray-400 mb-4">{error}</div>
-          <button
-            onClick={() => router.push('/')}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-          >
-            Back
-          </button>
-        </div>
-      </div>
-    );
+    return <ErrorScreen error={error} onBack={() => router.push('/')} />;
   }
 
   // Show album cover if no canvas OR if video failed OR if no track
