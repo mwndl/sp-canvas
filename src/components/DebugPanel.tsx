@@ -32,7 +32,7 @@ export const DebugPanel = ({ debugLogs, maxLogs, onClearLogs }: DebugPanelProps)
   };
 
   return (
-    <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
+    <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs z-50">
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center space-x-2">
           <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
