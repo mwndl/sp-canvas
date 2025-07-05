@@ -323,16 +323,31 @@ export default function CanvasPage() {
           let newVelX = dvdVelocity.x;
           let newVelY = dvdVelocity.y;
           
-          // Bater nas bordas (usando viewport completa)
-          // Borda esquerda ou direita - inverte apenas velocidade X
-          if (newX <= 12.5 || newX >= 87.5) {
+          // Limites da tela (considerando que a div tem transform: translate(-50%, -50%))
+          // Isso significa que o centro da div está na posição, então precisamos considerar
+          // que a div pode ter aproximadamente 300px de largura e 400px de altura
+          const divWidth = 300; // largura aproximada da div
+          const divHeight = 400; // altura aproximada da div
+          const screenWidth = window.innerWidth;
+          const screenHeight = window.innerHeight;
+          
+          // Calcular limites em porcentagem considerando o tamanho da div
+          const leftLimit = (divWidth / 2 / screenWidth) * 100;
+          const rightLimit = 100 - (divWidth / 2 / screenWidth) * 100;
+          const topLimit = (divHeight / 2 / screenHeight) * 100;
+          const bottomLimit = 100 - (divHeight / 2 / screenHeight) * 100;
+          
+          // Bater nas bordas - inverte velocidade quando toca o limite
+          if (newX <= leftLimit || newX >= rightLimit) {
             newVelX = -dvdVelocity.x;
-            newX = newX <= 12.5 ? 12.5 : 87.5;
+            // Corrigir posição para não passar do limite
+            newX = newX <= leftLimit ? leftLimit : rightLimit;
           }
-          // Borda superior ou inferior - inverte apenas velocidade Y
-          if (newY <= 12.5 || newY >= 87.5) {
+          
+          if (newY <= topLimit || newY >= bottomLimit) {
             newVelY = -dvdVelocity.y;
-            newY = newY <= 12.5 ? 12.5 : 87.5;
+            // Corrigir posição para não passar do limite
+            newY = newY <= topLimit ? topLimit : bottomLimit;
           }
           
           // Atualizar velocidade
