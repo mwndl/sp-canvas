@@ -53,6 +53,11 @@ export default function CanvasPage() {
   const searchParams = useSearchParams();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Configurações de debug
+  const defaultLogLimit = 50;
+  const logLimit = parseInt(searchParams.get('log_limit') || defaultLogLimit.toString());
+  const MAX_DEBUG_LOGS = Math.max(10, Math.min(200, logLimit)); // Limite entre 10 e 200 logs
+  
   // Pegar modo do screensaver da URL (usando siglas)
   const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
   const fadeInterval = parseInt(searchParams.get('fade') || '3000');
@@ -64,11 +69,29 @@ export default function CanvasPage() {
 
   const t = getTranslation(language);
 
+  // Log inicial do debug se estiver ativo
+  useEffect(() => {
+    if (debugMode) {
+      addDebugLog('CONFIG', `Debug ativado - Limite de logs: ${MAX_DEBUG_LOGS}`);
+    }
+  }, [debugMode, MAX_DEBUG_LOGS]);
+
   // Função para adicionar logs de debug
   const addDebugLog = useCallback((type: string, message: string) => {
     if (debugMode) {
       const timestamp = new Date().toLocaleTimeString();
-      setDebugLogs(prev => [...prev.slice(-19), { timestamp, type, message }]); // Manter apenas os últimos 20 logs
+      
+      setDebugLogs(prev => {
+        const newLog = { timestamp, type, message };
+        const updatedLogs = [...prev, newLog];
+        
+        // Manter apenas os últimos MAX_DEBUG_LOGS
+        if (updatedLogs.length > MAX_DEBUG_LOGS) {
+          return updatedLogs.slice(-MAX_DEBUG_LOGS);
+        }
+        
+        return updatedLogs;
+      });
     }
   }, [debugMode]);
 
@@ -162,20 +185,38 @@ export default function CanvasPage() {
     if (videoRef.current) {
       const video = videoRef.current;
       
+      // Verificar se o vídeo ainda está no DOM
+      if (!document.contains(video)) {
+        console.log('⚠️ Vídeo removido do DOM - abortando reprodução');
+        if (debugMode) {
+          addDebugLog('WARNING', 'Vídeo removido do DOM - abortando reprodução');
+        }
+        return;
+      }
+      
       // Reset video state
       video.currentTime = 0;
       video.load();
       
-      // Timer de 1 segundo para verificar se o vídeo iniciou
+      // Timer de 3 segundos para verificar se o vídeo iniciou
       const timeoutId = setTimeout(() => {
-        if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA ou vídeo pausado
-          console.log('⏰ Vídeo não iniciou após 1s - indo para fallback');
+        // Verificar novamente se o vídeo ainda está no DOM
+        if (!document.contains(video)) {
+          console.log('⚠️ Vídeo removido do DOM durante timeout');
           if (debugMode) {
-            addDebugLog('TIMEOUT', `Vídeo não iniciou após 1s - readyState: ${video.readyState}, paused: ${video.paused}`);
+            addDebugLog('WARNING', 'Vídeo removido do DOM durante timeout');
+          }
+          return;
+        }
+        
+        if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA ou vídeo pausado
+          console.log(`⏰ Vídeo não iniciou após 3s - readyState: ${video.readyState}, paused: ${video.paused}`);
+          if (debugMode) {
+            addDebugLog('TIMEOUT', `Vídeo não iniciou após 3s - readyState: ${video.readyState}, paused: ${video.paused}`);
           }
           setVideoFailed(true);
         }
-      }, 1000);
+      }, 3000);
       
       // Limpar timeout se o vídeo iniciar com sucesso
       const handleCanPlay = () => {
@@ -191,6 +232,14 @@ export default function CanvasPage() {
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
+            // Verificar se o vídeo ainda está no DOM
+            if (!document.contains(video)) {
+              console.log('⚠️ Vídeo removido do DOM após iniciar reprodução');
+              if (debugMode) {
+                addDebugLog('WARNING', 'Vídeo removido do DOM após iniciar reprodução');
+              }
+              return;
+            }
             console.log('✅ Vídeo reproduzindo com sucesso');
             if (debugMode) {
               addDebugLog('SUCCESS', 'Vídeo reproduzindo com sucesso');
@@ -198,6 +247,14 @@ export default function CanvasPage() {
             setVideoFailed(false);
           })
           .catch((error) => {
+            // Verificar se o erro é devido à remoção do DOM
+            if (error.message && error.message.includes('removed from the document')) {
+              console.log('⚠️ Vídeo removido do DOM durante reprodução - ignorando erro');
+              if (debugMode) {
+                addDebugLog('WARNING', 'Vídeo removido do DOM durante reprodução - ignorando erro');
+              }
+              return;
+            }
             console.error('❌ Falha ao reproduzir vídeo:', error);
             if (debugMode) {
               addDebugLog('ERROR', `Falha ao reproduzir vídeo: ${error.message || error}`);
@@ -373,10 +430,16 @@ export default function CanvasPage() {
         addDebugLog('CANVAS', `Mudando para canvas ${currentCanvasIndex + 1}/${canvasData.canvasesList.length}`);
       }
       
-      // Tentar reproduzir após um pequeno delay para garantir que o DOM foi atualizado
-      setTimeout(() => {
-        tryPlayVideo();
-      }, 100);
+      // Usar um delay maior para garantir que o DOM foi completamente atualizado
+      // e evitar conflitos com a remoção/adição de elementos
+      const timeoutId = setTimeout(() => {
+        // Verificar se ainda estamos no mesmo canvas antes de tentar reproduzir
+        if (videoRef.current && document.contains(videoRef.current)) {
+          tryPlayVideo();
+        }
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [canvasData, currentCanvasIndex, addDebugLog]);
 
@@ -603,7 +666,12 @@ export default function CanvasPage() {
         {debugMode && (
           <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
+              <div className="flex items-center space-x-2">
+                <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
+                <span className="text-xs text-gray-400">
+                  ({debugLogs.length}/{MAX_DEBUG_LOGS})
+                </span>
+              </div>
               <button 
                 onClick={() => setDebugLogs([])}
                 className="text-gray-400 hover:text-white text-xs"
@@ -615,20 +683,21 @@ export default function CanvasPage() {
               {debugLogs.map((log, index) => (
                 <div key={index} className="flex items-start space-x-2">
                   <span className="text-gray-400 min-w-[50px]">{log.timestamp}</span>
-                  <span className={`px-1 rounded text-xs ${
-                    log.type === 'ERROR' ? 'bg-red-500 text-white' :
-                    log.type === 'FAILURE' ? 'bg-red-600 text-white' :
-                    log.type === 'TIMEOUT' ? 'bg-yellow-600 text-white' :
-                    log.type === 'SUCCESS' ? 'bg-green-600 text-white' :
-                    log.type === 'READY' ? 'bg-blue-600 text-white' :
-                    log.type === 'LOAD' ? 'bg-blue-500 text-white' :
-                    log.type === 'STALLED' ? 'bg-orange-600 text-white' :
-                    log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
-                    log.type === 'ABORT' ? 'bg-red-700 text-white' :
-                    log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
-                    log.type === 'FALLBACK' ? 'bg-gray-700 text-white' :
-                    'bg-gray-600 text-white'
-                  }`}>
+                                  <span className={`px-1 rounded text-xs ${
+                  log.type === 'ERROR' ? 'bg-red-500 text-white' :
+                  log.type === 'FAILURE' ? 'bg-red-600 text-white' :
+                  log.type === 'TIMEOUT' ? 'bg-yellow-600 text-white' :
+                  log.type === 'SUCCESS' ? 'bg-green-600 text-white' :
+                  log.type === 'READY' ? 'bg-blue-600 text-white' :
+                  log.type === 'LOAD' ? 'bg-blue-500 text-white' :
+                  log.type === 'STALLED' ? 'bg-orange-600 text-white' :
+                  log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
+                  log.type === 'ABORT' ? 'bg-red-700 text-white' :
+                  log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
+                  log.type === 'FALLBACK' ? 'bg-gray-700 text-white' :
+                  log.type === 'CONFIG' ? 'bg-indigo-600 text-white' :
+                  'bg-gray-600 text-white'
+                }`}>
                     {log.type}
                   </span>
                   <span className="flex-1 break-words">{log.message}</span>
@@ -653,15 +722,25 @@ export default function CanvasPage() {
         ref={videoRef}
         key={currentCanvas.id}
         className="absolute inset-0 w-full h-full object-cover"
-        autoPlay
+        autoPlay={false}
         loop
         muted
         playsInline
         controls={false}
         disablePictureInPicture
         disableRemotePlayback
-        onLoadStart={() => console.log('🔄 Carregando vídeo...')}
-        onCanPlay={() => console.log('✅ Vídeo pronto')}
+        onLoadStart={() => {
+          console.log('🔄 Carregando vídeo...');
+          if (debugMode) {
+            addDebugLog('LOAD', 'Iniciando carregamento do vídeo...');
+          }
+        }}
+        onCanPlay={() => {
+          console.log('✅ Vídeo pronto');
+          if (debugMode) {
+            addDebugLog('READY', 'Vídeo pronto para reprodução');
+          }
+        }}
         onError={() => handleVideoFailure()}
         style={{
           pointerEvents: 'none',
@@ -715,7 +794,12 @@ export default function CanvasPage() {
       {debugMode && (
         <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
+            <div className="flex items-center space-x-2">
+              <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
+              <span className="text-xs text-gray-400">
+                ({debugLogs.length}/{MAX_DEBUG_LOGS})
+              </span>
+            </div>
             <button 
               onClick={() => setDebugLogs([])}
               className="text-gray-400 hover:text-white text-xs"
@@ -738,6 +822,7 @@ export default function CanvasPage() {
                   log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
                   log.type === 'ABORT' ? 'bg-red-700 text-white' :
                   log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
+                  log.type === 'CONFIG' ? 'bg-indigo-600 text-white' :
                   'bg-gray-600 text-white'
                 }`}>
                   {log.type}
