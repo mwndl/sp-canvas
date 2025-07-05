@@ -19,6 +19,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getTranslation, type Language } from '../../lib/i18n';
+import { useDebugLogs } from '../../hooks/useDebugLogs';
+import { DebugPanel } from '../../components/DebugPanel';
 
 interface Track {
   id: string;
@@ -60,7 +62,6 @@ export default function CanvasPage() {
   const [dvdVelocity, setDvdVelocity] = useState({ x: 0.25, y: 0.2 });
   const [lastTrackUri, setLastTrackUri] = useState<string | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
-  const [debugLogs, setDebugLogs] = useState<Array<{timestamp: string, type: string, message: string}>>([]);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -86,32 +87,19 @@ export default function CanvasPage() {
 
   const t = getTranslation(language);
 
+  // Debug logging hook
+  const { debugLogs, addDebugLog, clearLogs } = useDebugLogs({
+    debugMode,
+    maxLogs: MAX_DEBUG_LOGS
+  });
+
   // Initial debug log if active
   useEffect(() => {
     if (debugMode) {
       addDebugLog('CONFIG', `Debug enabled - Log limit: ${MAX_DEBUG_LOGS}`);
       addDebugLog('CONFIG', `Video timeout: ${videoTimeout}ms`);
     }
-  }, [debugMode, MAX_DEBUG_LOGS, videoTimeout]);
-
-  // Função para adicionar logs de debug
-  const addDebugLog = useCallback((type: string, message: string) => {
-    if (debugMode) {
-      const timestamp = new Date().toLocaleTimeString();
-      
-      setDebugLogs(prev => {
-        const newLog = { timestamp, type, message };
-        const updatedLogs = [...prev, newLog];
-        
-        // Manter apenas os últimos MAX_DEBUG_LOGS
-        if (updatedLogs.length > MAX_DEBUG_LOGS) {
-          return updatedLogs.slice(-MAX_DEBUG_LOGS);
-        }
-        
-        return updatedLogs;
-      });
-    }
-  }, [debugMode]);
+  }, [debugMode, MAX_DEBUG_LOGS, videoTimeout, addDebugLog]);
 
   // Atualizar relógio a cada segundo
   useEffect(() => {
@@ -682,50 +670,11 @@ export default function CanvasPage() {
 
         {/* Debug Panel para fallback */}
         {debugMode && (
-          <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
-                <span className="text-xs text-gray-400">
-                  ({debugLogs.length}/{MAX_DEBUG_LOGS})
-                </span>
-              </div>
-              <button 
-                onClick={() => setDebugLogs([])}
-                className="text-gray-400 hover:text-white text-xs"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="space-y-1">
-              {debugLogs.map((log, index) => (
-                <div key={index} className="flex items-start space-x-2">
-                  <span className="text-gray-400 min-w-[50px]">{log.timestamp}</span>
-                                  <span className={`px-1 rounded text-xs ${
-                  log.type === 'ERROR' ? 'bg-red-500 text-white' :
-                  log.type === 'FAILURE' ? 'bg-red-600 text-white' :
-                  log.type === 'TIMEOUT' ? 'bg-yellow-600 text-white' :
-                  log.type === 'SUCCESS' ? 'bg-green-600 text-white' :
-                  log.type === 'READY' ? 'bg-blue-600 text-white' :
-                  log.type === 'LOAD' ? 'bg-blue-500 text-white' :
-                  log.type === 'STALLED' ? 'bg-orange-600 text-white' :
-                  log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
-                  log.type === 'ABORT' ? 'bg-red-700 text-white' :
-                  log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
-                  log.type === 'FALLBACK' ? 'bg-gray-700 text-white' :
-                  log.type === 'CONFIG' ? 'bg-indigo-600 text-white' :
-                  'bg-gray-600 text-white'
-                }`}>
-                    {log.type}
-                  </span>
-                  <span className="flex-1 break-words">{log.message}</span>
-                </div>
-              ))}
-              {debugLogs.length === 0 && (
-                <div className="text-gray-400 italic">No logs available</div>
-              )}
-            </div>
-          </div>
+          <DebugPanel 
+            debugLogs={debugLogs}
+            maxLogs={MAX_DEBUG_LOGS}
+            onClearLogs={clearLogs}
+          />
         )}
       </div>
     );
@@ -810,49 +759,11 @@ export default function CanvasPage() {
 
       {/* Debug Panel */}
       {debugMode && (
-        <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-2">
-              <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
-              <span className="text-xs text-gray-400">
-                ({debugLogs.length}/{MAX_DEBUG_LOGS})
-              </span>
-            </div>
-            <button 
-              onClick={() => setDebugLogs([])}
-              className="text-gray-400 hover:text-white text-xs"
-            >
-              Clear
-            </button>
-          </div>
-          <div className="space-y-1">
-            {debugLogs.map((log, index) => (
-              <div key={index} className="flex items-start space-x-2">
-                <span className="text-gray-400 min-w-[50px]">{log.timestamp}</span>
-                <span className={`px-1 rounded text-xs ${
-                  log.type === 'ERROR' ? 'bg-red-500 text-white' :
-                  log.type === 'FAILURE' ? 'bg-red-600 text-white' :
-                  log.type === 'TIMEOUT' ? 'bg-yellow-600 text-white' :
-                  log.type === 'SUCCESS' ? 'bg-green-600 text-white' :
-                  log.type === 'READY' ? 'bg-blue-600 text-white' :
-                  log.type === 'LOAD' ? 'bg-blue-500 text-white' :
-                  log.type === 'STALLED' ? 'bg-orange-600 text-white' :
-                  log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
-                  log.type === 'ABORT' ? 'bg-red-700 text-white' :
-                  log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
-                  log.type === 'CONFIG' ? 'bg-indigo-600 text-white' :
-                  'bg-gray-600 text-white'
-                }`}>
-                  {log.type}
-                </span>
-                <span className="flex-1 break-words">{log.message}</span>
-              </div>
-            ))}
-            {debugLogs.length === 0 && (
-              <div className="text-gray-400 italic">No logs available</div>
-            )}
-          </div>
-        </div>
+        <DebugPanel 
+          debugLogs={debugLogs}
+          maxLogs={MAX_DEBUG_LOGS}
+          onClearLogs={clearLogs}
+        />
       )}
 
     </div>
