@@ -47,6 +47,7 @@ export default function CanvasPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fallbackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -323,19 +324,24 @@ export default function CanvasPage() {
           let newVelX = dvdVelocity.x;
           let newVelY = dvdVelocity.y;
           
-          // Limites da tela (considerando que a div tem transform: translate(-50%, -50%))
-          // Isso significa que o centro da div está na posição, então precisamos considerar
-          // que a div pode ter aproximadamente 300px de largura e 400px de altura
-          const divWidth = 300; // largura aproximada da div
-          const divHeight = 400; // altura aproximada da div
-          const screenWidth = window.innerWidth;
-          const screenHeight = window.innerHeight;
+          // Calcular limites baseados no tamanho real da tela e da div
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
           
-          // Calcular limites em porcentagem considerando o tamanho da div
-          const leftLimit = (divWidth / 2 / screenWidth) * 100;
-          const rightLimit = 100 - (divWidth / 2 / screenWidth) * 100;
-          const topLimit = (divHeight / 2 / screenHeight) * 100;
-          const bottomLimit = 100 - (divHeight / 2 / screenHeight) * 100;
+          // Obter tamanho real da div se disponível
+          const fallbackElement = fallbackRef.current;
+          const divWidth = fallbackElement ? fallbackElement.offsetWidth : 256;
+          const divHeight = fallbackElement ? fallbackElement.offsetHeight : 170;
+          
+          // Converter para porcentagem da viewport
+          const divWidthPercent = (divWidth / viewportWidth) * 100;
+          const divHeightPercent = (divHeight / viewportHeight) * 100;
+          
+          // Calcular limites onde a borda da div toca a borda da tela
+          const leftLimit = divWidthPercent / 2;   // Centro da div quando borda esquerda toca a tela
+          const rightLimit = 100 - (divWidthPercent / 2); // Centro da div quando borda direita toca a tela
+          const topLimit = divHeightPercent / 2;    // Centro da div quando borda superior toca a tela
+          const bottomLimit = 100 - (divHeightPercent / 2); // Centro da div quando borda inferior toca a tela
           
           // Bater nas bordas - inverte velocidade quando toca o limite
           if (newX <= leftLimit || newX >= rightLimit) {
@@ -410,6 +416,7 @@ export default function CanvasPage() {
       <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center">
         {track && track.album.images[0] ? (
           <div 
+            ref={fallbackRef}
             className={`text-white text-center transition-opacity duration-1000 transition-all duration-500 ${
               (mode === 'fade' || mode === 'dvd') ? 'absolute' : 'relative flex items-center justify-center'
             }`}
@@ -446,6 +453,7 @@ export default function CanvasPage() {
         ) : (
           // Relógio quando não há música
           <div 
+            ref={fallbackRef}
             className={`text-white text-center transition-opacity duration-1000 transition-all duration-500 ${
               (mode === 'fade' || mode === 'dvd') ? 'absolute' : 'relative flex items-center justify-center'
             }`}
