@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getTranslation, type Language } from '../../lib/i18n';
 
@@ -44,6 +44,7 @@ export default function CanvasPage() {
   const [dvdVelocity, setDvdVelocity] = useState({ x: 0.25, y: 0.2 });
   const [lastTrackUri, setLastTrackUri] = useState<string | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<Array<{timestamp: string, type: string, message: string}>>([]);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,8 +60,17 @@ export default function CanvasPage() {
   const pollingInterval = parseInt(searchParams.get('poll') || '5000');
   const showTrackInfo = searchParams.get('info') !== 'false';
   const language = (searchParams.get('lang') as Language) || 'en';
+  const debugMode = searchParams.get('debug') === 'true';
 
   const t = getTranslation(language);
+
+  // Função para adicionar logs de debug
+  const addDebugLog = useCallback((type: string, message: string) => {
+    if (debugMode) {
+      const timestamp = new Date().toLocaleTimeString();
+      setDebugLogs(prev => [...prev.slice(-19), { timestamp, type, message }]); // Manter apenas os últimos 20 logs
+    }
+  }, [debugMode]);
 
   // Atualizar relógio a cada segundo
   useEffect(() => {
@@ -78,8 +88,14 @@ export default function CanvasPage() {
         url += `?trackUri=spotify:track:${specificTrackId}`;
         console.log('🎯 Buscando Track ID específico:', specificTrackId);
         console.log('🔗 URL da requisição:', url);
+        if (debugMode) {
+          addDebugLog('API', `Buscando Track ID específico: ${specificTrackId}`);
+        }
       } else {
         console.log('🎵 Buscando música atual');
+        if (debugMode) {
+          addDebugLog('API', 'Buscando música atual');
+        }
       }
 
       const response = await fetch(url);
@@ -94,12 +110,18 @@ export default function CanvasPage() {
           setLastTrackUri(null);
           setError(null);
           console.log('⏰ Nenhuma música tocando - mostrando relógio');
+          if (debugMode) {
+            addDebugLog('INFO', 'Nenhuma música tocando - mostrando relógio');
+          }
           return;
         }
         
         // Se é um Track ID específico e deu erro, mostrar o erro
         if (specificTrackId) {
           console.error('❌ Erro ao buscar Track ID específico:', errorData.error);
+          if (debugMode) {
+            addDebugLog('ERROR', `Erro ao buscar Track ID específico: ${errorData.error}`);
+          }
           setError(`Erro ao buscar música: ${errorData.error}`);
           return;
         }
@@ -119,9 +141,16 @@ export default function CanvasPage() {
         setVideoFailed(false); // Reset video failure state
         setError(null); // Limpar qualquer erro anterior
         console.log('🎵 Nova música detectada:', data.track?.name || 'Track ID');
+        if (debugMode) {
+          addDebugLog('INFO', `Nova música detectada: ${data.track?.name || 'Track ID'}`);
+          addDebugLog('INFO', `Canvas encontrados: ${data.canvas?.canvasesList?.length || 0}`);
+        }
       }
     } catch (err) {
       console.error('Error fetching canvas:', err);
+      if (debugMode) {
+        addDebugLog('ERROR', `Erro ao buscar canvas: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
+      }
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
@@ -141,6 +170,9 @@ export default function CanvasPage() {
       const timeoutId = setTimeout(() => {
         if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA ou vídeo pausado
           console.log('⏰ Vídeo não iniciou após 1s - indo para fallback');
+          if (debugMode) {
+            addDebugLog('TIMEOUT', `Vídeo não iniciou após 1s - readyState: ${video.readyState}, paused: ${video.paused}`);
+          }
           setVideoFailed(true);
         }
       }, 1000);
@@ -160,10 +192,16 @@ export default function CanvasPage() {
         playPromise
           .then(() => {
             console.log('✅ Vídeo reproduzindo com sucesso');
+            if (debugMode) {
+              addDebugLog('SUCCESS', 'Vídeo reproduzindo com sucesso');
+            }
             setVideoFailed(false);
           })
           .catch((error) => {
             console.error('❌ Falha ao reproduzir vídeo:', error);
+            if (debugMode) {
+              addDebugLog('ERROR', `Falha ao reproduzir vídeo: ${error.message || error}`);
+            }
             handleVideoFailure();
           });
       }
@@ -173,7 +211,10 @@ export default function CanvasPage() {
   // Função para lidar com falha do vídeo
   const handleVideoFailure = () => {
     console.log('❌ Falha no vídeo detectada - indo para fallback');
-    setVideoFailed(true);
+    if (debugMode) {
+      addDebugLog('FAILURE', 'Falha no vídeo detectada - indo para fallback');
+    }
+      setVideoFailed(true);
   };
 
   // Event listeners para o vídeo
@@ -183,21 +224,36 @@ export default function CanvasPage() {
 
     const handleError = () => {
       console.error('❌ Erro no vídeo:', video.error);
+      if (debugMode) {
+        addDebugLog('ERROR', `Erro no vídeo: ${video.error?.message || 'Erro desconhecido'}`);
+      }
       handleVideoFailure();
     };
 
     const handleLoadStart = () => {
       console.log('🔄 Iniciando carregamento do vídeo...');
+      if (debugMode) {
+        addDebugLog('LOAD', 'Iniciando carregamento do vídeo...');
+      }
     };
 
     const handleCanPlay = () => {
       console.log('✅ Vídeo pronto para reprodução');
+      if (debugMode) {
+        addDebugLog('READY', 'Vídeo pronto para reprodução');
+      }
     };
 
     const handleStalled = () => {
       console.log('⚠️ Vídeo travou - tentando recuperar...');
+      if (debugMode) {
+        addDebugLog('STALLED', 'Vídeo travou - tentando recuperar...');
+      }
       setTimeout(() => {
         if (video.readyState < 3) { // HAVE_FUTURE_DATA
+          if (debugMode) {
+            addDebugLog('FAILURE', 'Vídeo não recuperou após stall');
+          }
           handleVideoFailure();
         }
       }, 5000);
@@ -205,8 +261,14 @@ export default function CanvasPage() {
 
     const handleSuspend = () => {
       console.log('⚠️ Carregamento do vídeo suspenso');
+      if (debugMode) {
+        addDebugLog('SUSPEND', 'Carregamento do vídeo suspenso');
+      }
       setTimeout(() => {
         if (video.readyState < 2) { // HAVE_CURRENT_DATA
+          if (debugMode) {
+            addDebugLog('FAILURE', 'Vídeo não recuperou após suspend');
+          }
           handleVideoFailure();
         }
       }, 3000);
@@ -214,13 +276,22 @@ export default function CanvasPage() {
 
     const handleAbort = () => {
       console.log('❌ Carregamento do vídeo abortado');
+      if (debugMode) {
+        addDebugLog('ABORT', 'Carregamento do vídeo abortado');
+      }
       handleVideoFailure();
     };
 
     const handleEmptied = () => {
       console.log('⚠️ Vídeo esvaziado - possivel falha');
+      if (debugMode) {
+        addDebugLog('EMPTIED', 'Vídeo esvaziado - possivel falha');
+      }
       setTimeout(() => {
         if (video.readyState === 0) { // HAVE_NOTHING
+          if (debugMode) {
+            addDebugLog('FAILURE', 'Vídeo não recuperou após emptied');
+          }
           handleVideoFailure();
         }
       }, 2000);
@@ -298,13 +369,31 @@ export default function CanvasPage() {
     if (canvasData && canvasData.canvasesList.length > 0 && !videoFailed) {
       // Reset video failure state quando mudar de canvas
       setVideoFailed(false);
+      if (debugMode) {
+        addDebugLog('CANVAS', `Mudando para canvas ${currentCanvasIndex + 1}/${canvasData.canvasesList.length}`);
+      }
       
       // Tentar reproduzir após um pequeno delay para garantir que o DOM foi atualizado
       setTimeout(() => {
         tryPlayVideo();
       }, 100);
     }
-  }, [canvasData, currentCanvasIndex]);
+  }, [canvasData, currentCanvasIndex, addDebugLog]);
+
+  // Monitorar mudanças de estado para debug
+  useEffect(() => {
+    if (debugMode) {
+      if (!canvasData) {
+        addDebugLog('FALLBACK', 'Nenhum canvas disponível');
+      } else if (!canvasData.canvasesList.length) {
+        addDebugLog('FALLBACK', 'Lista de canvas vazia');
+      } else if (videoFailed) {
+        addDebugLog('FALLBACK', 'Vídeo falhou - mostrando capa do álbum');
+      } else if (!track) {
+        addDebugLog('FALLBACK', 'Nenhuma música - mostrando relógio');
+      }
+    }
+  }, [debugMode, canvasData, videoFailed, track, addDebugLog]);
 
   // Efeito para modo fade in/out com movimento
   useEffect(() => {
@@ -509,6 +598,48 @@ export default function CanvasPage() {
             </div>
           </div>
         )}
+
+        {/* Debug Panel para fallback */}
+        {debugMode && (
+          <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
+              <button 
+                onClick={() => setDebugLogs([])}
+                className="text-gray-400 hover:text-white text-xs"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="space-y-1">
+              {debugLogs.map((log, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <span className="text-gray-400 min-w-[50px]">{log.timestamp}</span>
+                  <span className={`px-1 rounded text-xs ${
+                    log.type === 'ERROR' ? 'bg-red-500 text-white' :
+                    log.type === 'FAILURE' ? 'bg-red-600 text-white' :
+                    log.type === 'TIMEOUT' ? 'bg-yellow-600 text-white' :
+                    log.type === 'SUCCESS' ? 'bg-green-600 text-white' :
+                    log.type === 'READY' ? 'bg-blue-600 text-white' :
+                    log.type === 'LOAD' ? 'bg-blue-500 text-white' :
+                    log.type === 'STALLED' ? 'bg-orange-600 text-white' :
+                    log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
+                    log.type === 'ABORT' ? 'bg-red-700 text-white' :
+                    log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
+                    log.type === 'FALLBACK' ? 'bg-gray-700 text-white' :
+                    'bg-gray-600 text-white'
+                  }`}>
+                    {log.type}
+                  </span>
+                  <span className="flex-1 break-words">{log.message}</span>
+                </div>
+              ))}
+              {debugLogs.length === 0 && (
+                <div className="text-gray-400 italic">Nenhum log disponível</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -576,6 +707,47 @@ export default function CanvasPage() {
         <div className="absolute top-8 right-8 text-white">
           <div className="bg-black bg-opacity-50 backdrop-blur-sm rounded-lg px-3 py-1">
             {currentCanvasIndex + 1} / {canvasData.canvasesList.length}
+          </div>
+        </div>
+      )}
+
+      {/* Debug Panel */}
+      {debugMode && (
+        <div className="absolute top-8 left-8 max-w-md max-h-96 overflow-y-auto bg-black bg-opacity-80 backdrop-blur-sm rounded-lg p-4 text-white text-xs">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-bold text-sm">🔧 Debug Logs</h3>
+            <button 
+              onClick={() => setDebugLogs([])}
+              className="text-gray-400 hover:text-white text-xs"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="space-y-1">
+            {debugLogs.map((log, index) => (
+              <div key={index} className="flex items-start space-x-2">
+                <span className="text-gray-400 min-w-[50px]">{log.timestamp}</span>
+                <span className={`px-1 rounded text-xs ${
+                  log.type === 'ERROR' ? 'bg-red-500 text-white' :
+                  log.type === 'FAILURE' ? 'bg-red-600 text-white' :
+                  log.type === 'TIMEOUT' ? 'bg-yellow-600 text-white' :
+                  log.type === 'SUCCESS' ? 'bg-green-600 text-white' :
+                  log.type === 'READY' ? 'bg-blue-600 text-white' :
+                  log.type === 'LOAD' ? 'bg-blue-500 text-white' :
+                  log.type === 'STALLED' ? 'bg-orange-600 text-white' :
+                  log.type === 'SUSPEND' ? 'bg-orange-500 text-white' :
+                  log.type === 'ABORT' ? 'bg-red-700 text-white' :
+                  log.type === 'EMPTIED' ? 'bg-purple-600 text-white' :
+                  'bg-gray-600 text-white'
+                }`}>
+                  {log.type}
+                </span>
+                <span className="flex-1 break-words">{log.message}</span>
+              </div>
+            ))}
+            {debugLogs.length === 0 && (
+              <div className="text-gray-400 italic">Nenhum log disponível</div>
+            )}
           </div>
         </div>
       )}
