@@ -16,7 +16,7 @@
  * - log_limit: number - Debug log limit (default: 50, max: 200)
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDebugLogs } from '../../hooks/useDebugLogs';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
@@ -27,6 +27,7 @@ import { useCanvasFetch } from '../../hooks/useCanvasFetch';
 import { useClock } from '../../hooks/useClock';
 import { useCanvasRotation } from '../../hooks/useCanvasRotation';
 import { useLyricsFetch } from '../../hooks/useLyricsFetch';
+import { usePlayerProgress } from '../../hooks/usePlayerProgress';
 import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
@@ -118,6 +119,54 @@ export default function CanvasPage() {
     debugMode,
     addDebugLog
   });
+
+  // Player progress hook
+  const {
+    playerProgress,
+    isLoading: isPlayerLoading,
+    error: playerError
+  } = usePlayerProgress({
+    enabled: showLyrics && !!track,
+    pollingInterval: 1000, // 1 segundo
+    debugMode,
+    addDebugLog
+  });
+
+  // Lyrics sync state
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(0);
+  const lastLyricsTrackId = useRef<string | null>(null);
+
+  // Sincronizar a linha da letra com o tempo do player do Spotify
+  useEffect(() => {
+    if (!showLyrics || !lyrics || !playerProgress) return;
+    
+    const currentTimeMs = playerProgress.progress;
+    let idx = 0;
+    
+    for (let i = 0; i < lyrics.lines.length; i++) {
+      const start = parseInt(lyrics.lines[i].startTimeMs);
+      const nextStart = i + 1 < lyrics.lines.length ? parseInt(lyrics.lines[i + 1].startTimeMs) : Infinity;
+      if (currentTimeMs >= start && currentTimeMs < nextStart) {
+        idx = i;
+        break;
+      }
+    }
+    
+    // Log para depuração
+    if (debugMode) {
+      addDebugLog('LYRICS', `Player time: ${(currentTimeMs/1000).toFixed(2)}s, idx: ${idx}, line: ${lyrics.lines[idx]?.words}`);
+    }
+    
+    setCurrentLyricIndex(idx);
+  }, [showLyrics, lyrics, playerProgress, debugMode, addDebugLog]);
+
+  // Resetar índice da letra ao trocar de música
+  useEffect(() => {
+    if (lyrics && playerProgress?.trackId !== lastLyricsTrackId.current) {
+      setCurrentLyricIndex(0);
+      lastLyricsTrackId.current = playerProgress?.trackId || null;
+    }
+  }, [lyrics, playerProgress?.trackId]);
 
   // Initial debug log if active
   useEffect(() => {
@@ -375,37 +424,41 @@ export default function CanvasPage() {
       {/* Lyrics Overlay */}
       {showLyrics && lyrics && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none select-none"
+          className="absolute inset-0 flex flex-col items-start justify-start z-20 pointer-events-none select-none"
           style={{
-            // Fundo de acordo com lyricsBgMode
             background:
               lyricsBgMode === 'theme' && lyricsColors?.background
                 ? `#${(lyricsColors.background >>> 0).toString(16).padStart(6, '0')}`
                 : lyricsBgMode === 'fixed' && lyricsBgColor
                 ? lyricsBgColor
+                : lyricsBgMode === 'cover' && canvasData?.canvasesList?.length > 0
+                ? 'transparent' // Se tem Canvas, não usar capa como fundo
                 : lyricsBgMode === 'cover' && track?.album.images[0]?.url
                 ? `url(${track.album.images[0].url}) center/cover no-repeat`
                 : 'transparent',
-            opacity: 0.85,
-            transition: 'background 0.5s, opacity 0.5s',
-            mixBlendMode: 'multiply',
+            transition: 'background 0.5s',
           }}
         >
-          {/* Exemplo: renderizar todas as linhas (depois sincronizar) */}
-          <div className="text-center px-4">
-            {lyrics.lines.map((line, idx) => (
-              <div
-                key={idx}
-                className="text-3xl md:text-5xl font-bold mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-                style={{
-                  color: lyricsColors?.text
-                    ? `#${(lyricsColors.text >>> 0).toString(16).padStart(6, '0')}`
-                    : '#fff',
-                }}
-              >
-                {line.words}
-              </div>
-            ))}
+          {/* Exibir linha ativa e vizinhas no topo */}
+          <div className="w-full max-w-3xl mt-12 mx-auto text-center px-4">
+            {lyrics.lines.map((line, idx) => {
+              if (Math.abs(idx - currentLyricIndex) > 2) return null;
+              return (
+                <div
+                  key={idx}
+                  className={`mb-2 break-words transition-all duration-300
+                    ${idx === currentLyricIndex
+                      ? 'text-white font-bold text-3xl md:text-5xl scale-110'
+                      : 'text-white font-normal text-2xl md:text-3xl scale-100'}
+                  `}
+                  style={{
+                    color: '#fff',
+                  }}
+                >
+                  {line.words}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
