@@ -232,7 +232,45 @@ export const FallbackDisplay = ({
                   }}
                 >
                   <span className="inline-block">
-                    {line.words}
+                    {isActive && line.words.trim() === '♪' ? (
+                      // Animação para instrumental
+                      (() => {
+                        const currentTimeMs = playerProgress?.progress || 0;
+                        const startTime = parseInt(line.startTimeMs);
+                        const nextLine = lyrics.lines[idx + 1];
+                        const endTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000; // 10s se não houver próxima linha
+                        const duration = endTime - startTime;
+                        const elapsed = currentTimeMs - startTime;
+                        const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+                        
+                        if (debugMode) {
+                          console.log('🎵 Instrumental progress:', progress);
+                        }
+                        
+                        return (
+                          <div className="flex items-center justify-center space-x-2">
+                            {[0, 1, 2, 3].map((i) => (
+                              <span 
+                                key={i} 
+                                className={`text-4xl md:text-6xl lg:text-7xl transition-all duration-700 ease-out transform
+                                  ${progress >= (i + 1) * 0.25 
+                                    ? 'opacity-100 scale-100' 
+                                    : 'opacity-30 scale-75'
+                                  }
+                                `}
+                                style={{
+                                  animationDelay: `${i * 200}ms`,
+                                }}
+                              >
+                                ♪
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      line.words
+                    )}
                   </span>
                 </div>
               );
