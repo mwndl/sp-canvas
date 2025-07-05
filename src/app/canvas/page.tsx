@@ -44,7 +44,7 @@ export default function CanvasPage() {
   const [dvdVelocity, setDvdVelocity] = useState({ x: 0.25, y: 0.2 });
   const [lastTrackUri, setLastTrackUri] = useState<string | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const videoRef = useRef<HTMLVideoElement>(null);
   const fallbackRef = useRef<HTMLDivElement>(null);
@@ -117,7 +117,6 @@ export default function CanvasPage() {
         setLastTrackUri(currentTrackUri);
         setCurrentCanvasIndex(0); // Reset canvas index
         setVideoFailed(false); // Reset video failure state
-        setRetryCount(0); // Reset retry count
         setError(null); // Limpar qualquer erro anterior
         console.log('🎵 Nova música detectada:', data.track?.name || 'Track ID');
       }
@@ -138,6 +137,22 @@ export default function CanvasPage() {
       video.currentTime = 0;
       video.load();
       
+      // Timer de 1 segundo para verificar se o vídeo iniciou
+      const timeoutId = setTimeout(() => {
+        if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA ou vídeo pausado
+          console.log('⏰ Vídeo não iniciou após 1s - indo para fallback');
+          setVideoFailed(true);
+        }
+      }, 1000);
+      
+      // Limpar timeout se o vídeo iniciar com sucesso
+      const handleCanPlay = () => {
+        clearTimeout(timeoutId);
+        video.removeEventListener('canplay', handleCanPlay);
+      };
+      
+      video.addEventListener('canplay', handleCanPlay);
+      
       // Tentar reproduzir
       const playPromise = video.play();
       
@@ -146,7 +161,6 @@ export default function CanvasPage() {
           .then(() => {
             console.log('✅ Vídeo reproduzindo com sucesso');
             setVideoFailed(false);
-            setRetryCount(0);
           })
           .catch((error) => {
             console.error('❌ Falha ao reproduzir vídeo:', error);
@@ -158,16 +172,8 @@ export default function CanvasPage() {
 
   // Função para lidar com falha do vídeo
   const handleVideoFailure = () => {
-    if (retryCount < 2) { // Tentar até 2 vezes
-      console.log(`🔄 Tentativa ${retryCount + 1} de 2 - Tentando novamente em 2 segundos...`);
-      setRetryCount(prev => prev + 1);
-      setTimeout(() => {
-        tryPlayVideo();
-      }, 2000);
-    } else {
-      console.log('❌ Vídeo falhou após 2 tentativas - Mostrando capa do álbum');
-      setVideoFailed(true);
-    }
+    console.log('❌ Falha no vídeo detectada - indo para fallback');
+    setVideoFailed(true);
   };
 
   // Event listeners para o vídeo
@@ -286,6 +292,19 @@ export default function CanvasPage() {
       return () => clearInterval(interval);
     }
   }, [canvasData]);
+
+  // Tentar reproduzir vídeo quando canvas mudar
+  useEffect(() => {
+    if (canvasData && canvasData.canvasesList.length > 0 && !videoFailed) {
+      // Reset video failure state quando mudar de canvas
+      setVideoFailed(false);
+      
+      // Tentar reproduzir após um pequeno delay para garantir que o DOM foi atualizado
+      setTimeout(() => {
+        tryPlayVideo();
+      }, 100);
+    }
+  }, [canvasData, currentCanvasIndex]);
 
   // Efeito para modo fade in/out com movimento
   useEffect(() => {
@@ -445,14 +464,6 @@ export default function CanvasPage() {
                   {track.artists.map(artist => artist.name).join(', ')}
                 </p>
                 <p className="text-gray-400 text-sm">{track.album.name}</p>
-                {videoFailed && (
-                  <p className="text-yellow-400 text-xs mt-2">
-                    {language === 'pt' 
-                      ? 'Canvas não disponível - mostrando capa do álbum'
-                      : 'Canvas not available - showing album cover'
-                    }
-                  </p>
-                )}
               </div>
             </div>
           </div>
