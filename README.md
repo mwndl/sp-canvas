@@ -18,7 +18,7 @@ npm install
 ```
 
 3. Configure a variável de ambiente:
-   - Crie um arquivo `.env.local` na raiz do projeto
+   - Crie um arquivo `.env` na raiz do projeto
    - Adicione sua variável SP_DC:
    ```
    SP_DC=seu_valor_do_cookie_sp_dc_aqui
@@ -33,7 +33,7 @@ npm install
 5. No painel esquerdo, expanda **Cookies** e clique em `https://open.spotify.com`
 6. Procure pelo cookie chamado `sp_dc`
 7. Copie o valor do cookie (deve começar com "AQ" e ter mais de 50 caracteres)
-8. Cole esse valor no arquivo `.env.local`
+8. Cole esse valor no arquivo `.env`
 
 ### 3. Executar o projeto
 
