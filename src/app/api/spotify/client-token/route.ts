@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from '@/lib/spotifyAuthService.js';
 
 export async function POST(request: NextRequest) {
   try {
-    const { accessToken } = await request.json();
+    // Get access token using the same method as other APIs
+    const accessToken = await getToken();
 
     if (!accessToken) {
       return NextResponse.json(
-        { error: 'Access token is required' },
-        { status: 400 }
+        { error: 'Failed to get access token' },
+        { status: 401 }
       );
     }
 
@@ -33,7 +35,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!clientTokenResponse.ok) {
-      throw new Error(`Failed to get client token: ${clientTokenResponse.status}`);
+      const errorText = await clientTokenResponse.text();
+      console.error('Client token error:', clientTokenResponse.status, errorText);
+      throw new Error(`Failed to get client token: ${clientTokenResponse.status} - ${errorText}`);
     }
 
     const clientTokenData = await clientTokenResponse.json();

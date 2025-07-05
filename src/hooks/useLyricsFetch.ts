@@ -31,7 +31,6 @@ interface Colors {
 interface UseLyricsFetchOptions {
   trackId: string | null;
   albumImageUrl: string | null;
-  accessToken: string | null;
   enabled: boolean;
   debugMode: boolean;
   addDebugLog: (type: string, message: string) => void;
@@ -40,7 +39,6 @@ interface UseLyricsFetchOptions {
 export const useLyricsFetch = ({
   trackId,
   albumImageUrl,
-  accessToken,
   enabled,
   debugMode,
   addDebugLog
@@ -51,7 +49,7 @@ export const useLyricsFetch = ({
   const [error, setError] = useState<string | null>(null);
 
   const fetchLyrics = useCallback(async () => {
-    if (!enabled || !trackId || !accessToken) {
+    if (!enabled || !trackId) {
       return;
     }
 
@@ -69,7 +67,6 @@ export const useLyricsFetch = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          accessToken,
           trackId,
           albumImageUrl,
         }),
@@ -108,7 +105,7 @@ export const useLyricsFetch = ({
     } finally {
       setIsLoading(false);
     }
-  }, [trackId, albumImageUrl, accessToken, enabled, debugMode, addDebugLog]);
+  }, [trackId, albumImageUrl, enabled, debugMode, addDebugLog]);
 
   // Fetch lyrics when dependencies change
   useEffect(() => {

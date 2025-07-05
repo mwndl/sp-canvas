@@ -1,38 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from '@/lib/spotifyAuthService.js';
 
 export async function POST(request: NextRequest) {
   try {
-    const { accessToken, trackId, albumImageUrl } = await request.json();
+    const { trackId, albumImageUrl } = await request.json();
 
-    if (!accessToken || !trackId) {
+    console.log('🎵 Lyrics API - Request received:', { trackId, albumImageUrl });
+
+    if (!trackId) {
       return NextResponse.json(
-        { error: 'Access token and track ID are required' },
+        { error: 'Track ID is required' },
         { status: 400 }
       );
     }
 
-    // Get client token first
-    const clientTokenResponse = await fetch('/api/spotify/client-token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ accessToken }),
-    });
+    // Get access token using the same method as other APIs
+    console.log('🔑 Lyrics API - Getting access token...');
+    const accessToken = await getToken();
 
-    if (!clientTokenResponse.ok) {
-      throw new Error('Failed to get client token');
+    if (!accessToken) {
+      console.error('❌ Lyrics API - Failed to get access token');
+      return NextResponse.json(
+        { error: 'Failed to get access token' },
+        { status: 401 }
+      );
     }
 
-    const { clientToken } = await clientTokenResponse.json();
+    console.log('✅ Lyrics API - Access token obtained');
 
     // Get lyrics using Spotify's internal API
     const lyricsUrl = `https://spclient.wg.spotify.com/color-lyrics/v2/track/${trackId}/image/${encodeURIComponent(albumImageUrl || '')}?format=json&vocalRemoval=false&market=from_token`;
     
+    console.log('🎵 Lyrics API - Fetching lyrics from:', lyricsUrl);
+    
     const lyricsResponse = await fetch(lyricsUrl, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'client-token': clientToken,
         'spotify-app-version': '1.2.68.318.g41192627',
         'app-platform': 'WebPlayer',
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
@@ -46,21 +49,28 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('📊 Lyrics API - Response status:', lyricsResponse.status);
+
     if (!lyricsResponse.ok) {
       if (lyricsResponse.status === 404) {
+        console.log('❌ Lyrics API - No lyrics available (404)');
         return NextResponse.json({ lyrics: null, colors: null });
       }
-      throw new Error(`Failed to get lyrics: ${lyricsResponse.status}`);
+      
+      const errorText = await lyricsResponse.text();
+      console.error('❌ Lyrics API - Error response:', lyricsResponse.status, errorText);
+      throw new Error(`Failed to get lyrics: ${lyricsResponse.status} - ${errorText}`);
     }
 
     const lyricsData = await lyricsResponse.json();
+    console.log('✅ Lyrics API - Lyrics obtained successfully');
 
     return NextResponse.json({
       lyrics: lyricsData.lyrics,
       colors: lyricsData.colors,
     });
   } catch (error) {
-    console.error('Error getting lyrics:', error);
+    console.error('❌ Lyrics API - Error:', error);
     return NextResponse.json(
       { error: 'Failed to get lyrics' },
       { status: 500 }

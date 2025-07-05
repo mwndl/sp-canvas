@@ -114,7 +114,6 @@ export default function CanvasPage() {
   } = useLyricsFetch({
     trackId: track?.id || null,
     albumImageUrl: track?.album.images[0]?.url || null,
-    accessToken: null, // TODO: obter accessToken do contexto/autenticação
     enabled: showLyrics && !!track,
     debugMode,
     addDebugLog
