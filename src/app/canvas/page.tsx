@@ -363,6 +363,19 @@ export default function CanvasPage() {
         debugLogs={debugLogs}
         maxDebugLogs={maxDebugLogs}
         onClearLogs={clearLogs}
+        // Lyrics props
+        showLyrics={showLyrics}
+        lyrics={lyrics}
+        lyricsBgMode={lyricsBgMode}
+        lyricsBgColor={lyricsBgColor}
+        lyricsColors={lyricsColors}
+        currentLyricIndex={currentLyricIndex}
+        playerProgress={playerProgress ? {
+          progress: playerProgress.progress,
+          trackId: playerProgress.trackId
+        } : null}
+        // Track info prop
+        showTrackInfo={showTrackInfo}
       />
     );
   }
@@ -450,19 +463,6 @@ export default function CanvasPage() {
       {showLyrics && lyrics && (
         <div
           className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none select-none"
-          style={{
-            background:
-              lyricsBgMode === 'theme' && lyricsColors?.background
-                ? `#${(lyricsColors.background >>> 0).toString(16).padStart(6, '0')}`
-                : lyricsBgMode === 'fixed' && lyricsBgColor
-                ? lyricsBgColor
-                : lyricsBgMode === 'cover' && canvasData?.canvasesList?.length > 0
-                ? 'transparent' // Se tem Canvas, não usar capa como fundo
-                : lyricsBgMode === 'cover' && track?.album.images[0]?.url
-                ? `url(${track.album.images[0].url}) center/cover no-repeat`
-                : 'transparent',
-            transition: 'background 0.5s',
-          }}
         >
           {/* Exibir linha ativa e vizinhas centralizadas */}
           <div className="w-full max-w-4xl mx-auto text-center px-6">
