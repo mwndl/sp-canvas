@@ -54,6 +54,8 @@ export default function CanvasPage() {
   const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
   const fadeInterval = parseInt(searchParams.get('fadeInterval') || '3000');
   const autoUpdate = searchParams.get('autoUpdate') !== 'false'; // true por padrão
+  const pollingInterval = parseInt(searchParams.get('pollingInterval') || '5000');
+  const showTrackInfo = searchParams.get('showTrackInfo') !== 'false'; // true por padrão
 
   // Atualizar relógio a cada segundo
   useEffect(() => {
@@ -238,11 +240,11 @@ export default function CanvasPage() {
     
     // Só fazer polling se autoUpdate estiver ativado E não for uma faixa específica
     if (autoUpdate && !trackUri) {
-      console.log('🔄 Iniciando polling automático para música atual');
-      // Verificar a cada 5 segundos se a música mudou
+      console.log(`🔄 Iniciando polling automático para música atual (a cada ${pollingInterval/1000}s)`);
+      // Verificar no intervalo configurado se a música mudou
       pollingIntervalRef.current = setInterval(() => {
         fetchCanvas();
-      }, 5000);
+      }, pollingInterval);
 
       return () => {
         if (pollingIntervalRef.current) {
@@ -491,23 +493,27 @@ export default function CanvasPage() {
       </video>
 
       {/* Track Info Overlay */}
-      {track && (
+      {track && showTrackInfo && (
         <div className="absolute bottom-8 left-8 right-8 text-white">
-          <div className="bg-black bg-opacity-50 backdrop-blur-sm rounded-lg p-4">
+          <div className="p-4">
             <div className="flex items-center space-x-4">
               {track.album.images[0] && (
                 <img
                   src={track.album.images[0].url}
                   alt={track.album.name}
-                  className="w-16 h-16 rounded"
+                  className="w-16 h-16 rounded-lg shadow-2xl"
                 />
               )}
               <div className="flex-1">
-                <h2 className="text-xl font-bold">{track.name}</h2>
-                <p className="text-gray-300">
+                <h2 className="text-xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  {track.name}
+                </h2>
+                <p className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                   {track.artists.map(artist => artist.name).join(', ')}
                 </p>
-                <p className="text-gray-400 text-sm">{track.album.name}</p>
+                <p className="text-white text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  {track.album.name}
+                </p>
               </div>
             </div>
           </div>
