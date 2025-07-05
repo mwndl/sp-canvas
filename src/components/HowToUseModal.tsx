@@ -20,7 +20,7 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">
-              {language === 'pt' ? 'Como Usar o SpCanvas' : 'How to Use SpCanvas'}
+              {language === 'pt' ? 'Como Usar o SpotSaver' : 'How to Use SpotSaver'}
             </h2>
             <button
               onClick={onClose}
@@ -39,8 +39,8 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                 <p>
                   {language === 'pt' 
-                    ? 'Para que o SpCanvas funcione, você precisa configurar uma variável de ambiente com seu cookie sp_dc do Spotify:'
-                    : 'For SpCanvas to work, you need to configure an environment variable with your Spotify sp_dc cookie:'
+                    ? 'Para que o SpotSaver funcione, você precisa configurar uma variável de ambiente com seu cookie sp_dc do Spotify:'
+                    : 'For SpotSaver to work, you need to configure an environment variable with your Spotify sp_dc cookie:'
                   }
                 </p>
                 <div className="bg-gray-900 rounded p-3 font-mono text-sm">
@@ -108,8 +108,8 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? 'O SpCanvas detecta automaticamente a música que está tocando no Spotify e exibe o Canvas correspondente.'
-                      : 'SpCanvas automatically detects the music playing on Spotify and displays the corresponding Canvas.'
+                      ? 'O SpotSaver detecta automaticamente a música que está tocando no Spotify e exibe o Canvas correspondente.'
+                      : 'SpotSaver automatically detects the music playing on Spotify and displays the corresponding Canvas.'
                     }
                   </p>
                 </div>

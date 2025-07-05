@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SpCanvas - Proteção de Tela do Spotify",
+          title: "SpotSaver - Proteção de Tela do Spotify",
   description: "Exiba o Canvas das suas músicas do Spotify em tela cheia como proteção de tela",
   keywords: ["spotify", "canvas", "proteção de tela", "música", "fullscreen"],
-  authors: [{ name: "SpCanvas" }],
+          authors: [{ name: "SpotSaver" }],
 };
 
 export const viewport: Viewport = {

@@ -34,7 +34,7 @@ export interface Translations {
 
 const translations: Record<Language, Translations> = {
   pt: {
-    title: 'SpCanvas',
+    title: 'SpotSaver',
     subtitle: 'Spotify Canvas Screensaver',
     musicSearch: 'Busca de Música',
     searchMode: 'Modo de Busca',
@@ -65,7 +65,7 @@ const translations: Record<Language, Translations> = {
     second: ''
   },
   en: {
-    title: 'SpCanvas',
+    title: 'SpotSaver',
     subtitle: 'Spotify Canvas Screensaver',
     musicSearch: 'Music Search',
     searchMode: 'Search Mode',

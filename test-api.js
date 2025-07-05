@@ -1,8 +1,8 @@
-// Teste da API SpCanvas
+// Teste da API SpotSaver
 const API_BASE = 'http://localhost:3000/api/spotify';
 
 async function testAPI() {
-  console.log('🎵 Testando API SpCanvas...\n');
+  console.log('🎵 Testando API SpotSaver...\n');
 
   // Teste 1: Buscar música atual
   console.log('1️⃣ Testando busca da música atual:');

@@ -1,4 +1,4 @@
-# SpCanvas - Spotify Canvas Screensaver
+# SpotSaver - Spotify Canvas Screensaver
 
 Um screensaver elegante que exibe o Canvas do Spotify da música atualmente tocando em tela cheia.
 
@@ -9,7 +9,7 @@ Um screensaver elegante que exibe o Canvas do Spotify da música atualmente toca
 1. Clone o repositório:
 ```bash
 git clone <repository-url>
-cd sp-canvas
+cd spotsaver
 ```
 
 2. Instale as dependências:
@@ -65,7 +65,7 @@ npm run dev
 
 ## 📱 Como funciona
 
-O SpCanvas usa uma implementação robusta de autenticação TOTP (Time-based One-Time Password) que simula exatamente como o Spotify Web Player funciona:
+O SpotSaver usa uma implementação robusta de autenticação TOTP (Time-based One-Time Password) que simula exatamente como o Spotify Web Player funciona:
 
 1. **Autenticação**: Gera tokens TOTP para autenticar com a API do Spotify
 2. **Busca da música**: Obtém a música atualmente tocando via Spotify Web API
