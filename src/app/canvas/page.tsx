@@ -500,10 +500,15 @@ export default function CanvasPage() {
                 return (
                   <div
                     key={idx}
-                    className="mb-4 transition-all duration-500 ease-out transform text-white font-bold text-4xl md:text-6xl lg:text-7xl scale-110 opacity-100"
+                    className="transition-all duration-500 ease-out transform text-white font-bold text-3xl md:text-5xl lg:text-6xl scale-110 opacity-100 mb-8 md:mb-12 lg:mb-16"
                     style={{
                       color: '#fff',
                       textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)',
+                      marginBottom: '4vh', // 4% da altura da viewport para linha ativa
+                      height: '8vh', // Altura fixa para linha ativa (preparada para 2 linhas)
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
                   >
                     <span className="inline-block">
@@ -531,14 +536,14 @@ export default function CanvasPage() {
               return (
                 <div
                   key={idx}
-                  className={`mb-4 transition-all duration-500 ease-out transform
+                  className={`transition-all duration-500 ease-out transform
                     ${isActive 
-                      ? 'text-white font-bold text-4xl md:text-6xl lg:text-7xl scale-110 opacity-100'
+                      ? 'text-white font-bold text-3xl md:text-5xl lg:text-6xl scale-110 opacity-100 mb-8 md:mb-12 lg:mb-16'
                       : isNext
-                      ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70'
+                      ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70 mb-4 md:mb-6 lg:mb-8'
                       : isPrevious
-                      ? 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40'
-                      : 'text-white font-normal text-lg md:text-xl lg:text-2xl scale-90 opacity-20'
+                      ? 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40 mb-4 md:mb-6 lg:mb-8'
+                      : 'text-white font-normal text-lg md:text-xl lg:text-2xl scale-90 opacity-20 mb-2 md:mb-4 lg:mb-6'
                     }
                   `}
                   style={{
@@ -546,6 +551,17 @@ export default function CanvasPage() {
                     textShadow: isActive 
                       ? '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
                       : '0 2px 4px rgba(0,0,0,0.6)',
+                    marginBottom: isActive 
+                      ? '4vh' // 4% da altura da viewport para linha ativa
+                      : isNext || isPrevious
+                      ? '2vh' // 2% da altura da viewport para linhas próximas
+                      : '1vh', // 1% da altura da viewport para linhas distantes
+                    ...(isActive && {
+                      height: '8vh', // Altura fixa para linha ativa (preparada para 2 linhas)
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    })
                   }}
                 >
                   <span className="inline-block">
