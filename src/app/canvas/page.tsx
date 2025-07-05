@@ -26,6 +26,7 @@ import { useScreensaverAnimation } from '../../hooks/useScreensaverAnimation';
 import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
+import { FallbackDisplay } from '../../components/FallbackDisplay';
 
 interface Track {
   id: string;
@@ -395,88 +396,20 @@ export default function CanvasPage() {
   // Show album cover if no canvas OR if video failed OR if no track
   if (!canvasData || !canvasData.canvasesList.length || videoFailed || !track) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        {track && track.album.images[0] ? (
-          <div 
-            ref={fallbackRef}
-            className={`text-white text-center transition-opacity duration-1000 transition-all duration-500 ${
-              (mode === 'fade' || mode === 'dvd') ? 'absolute' : 'relative flex items-center justify-center'
-            }`}
-            style={{
-              opacity: mode === 'fade' ? fadeOpacity : 1,
-              left: mode === 'fade' ? `${fadePosition.x}%` : (mode === 'dvd' ? `${dvdPosition.x}%` : 'auto'),
-              top: mode === 'fade' ? `${fadePosition.y}%` : (mode === 'dvd' ? `${dvdPosition.y}%` : 'auto'),
-              transform: (mode === 'fade' || mode === 'dvd') ? 'translate(-50%, -50%)' : 'none'
-            }}
-          >
-            <div className="space-y-4" style={{ width: '256px', flexShrink: 0 }}>
-              <img
-                src={track.album.images[0].url}
-                alt={track.album.name}
-                className="w-64 h-64 rounded-lg shadow-2xl mx-auto object-cover"
-                style={{ minWidth: '256px', minHeight: '256px' }}
-              />
-              <div>
-                <h2 className="text-2xl font-bold mb-2">{track.name}</h2>
-                <p className="text-gray-300 text-lg">
-                  {track.artists.map(artist => artist.name).join(', ')}
-                </p>
-                <p className="text-gray-400 text-sm">{track.album.name}</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Clock when no track is playing
-          <div 
-            ref={fallbackRef}
-            className={`text-white text-center transition-opacity duration-1000 transition-all duration-500 ${
-              (mode === 'fade' || mode === 'dvd') ? 'absolute' : 'relative flex items-center justify-center'
-            }`}
-            style={{
-              opacity: mode === 'fade' ? fadeOpacity : 1,
-              left: mode === 'fade' ? `${fadePosition.x}%` : (mode === 'dvd' ? `${dvdPosition.x}%` : 'auto'),
-              top: mode === 'fade' ? `${fadePosition.y}%` : (mode === 'dvd' ? `${dvdPosition.y}%` : 'auto'),
-              transform: (mode === 'fade' || mode === 'dvd') ? 'translate(-50%, -50%)' : 'none'
-            }}
-          >
-            <div className="space-y-4">
-              {/* Simple clock */}
-              <div className="text-center">
-                <div className="text-8xl font-bold font-mono">
-                  {currentTime.toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: false 
-                  })}
-                </div>
-              </div>
-              {/* Date */}
-              <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  {currentTime.toLocaleDateString('en-US', { 
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </h2>
-                <p className="text-gray-400 text-sm">
-                  {language === 'pt' ? 'Nenhuma música tocando' : 'No track currently playing'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Debug Panel para fallback */}
-        {debugMode && (
-          <DebugPanel 
-            debugLogs={debugLogs}
-            maxLogs={maxDebugLogs}
-            onClearLogs={clearLogs}
-          />
-        )}
-      </div>
+      <FallbackDisplay
+        track={track}
+        currentTime={currentTime}
+        language={language}
+        mode={mode}
+        fadeOpacity={fadeOpacity}
+        fadePosition={fadePosition}
+        dvdPosition={dvdPosition}
+        fallbackRef={fallbackRef}
+        debugMode={debugMode}
+        debugLogs={debugLogs}
+        maxDebugLogs={maxDebugLogs}
+        onClearLogs={clearLogs}
+      />
     );
   }
 
