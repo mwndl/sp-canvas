@@ -393,9 +393,20 @@ export default function CanvasPage() {
         <source src={currentCanvas.canvasUrl} type="video/mp4" />
       </video>
 
+      {/* Overlay para letras (entre Canvas e letra) */}
+      {showLyrics && lyrics && (
+        <div 
+          className="absolute inset-0 z-10"
+          style={{
+            background: 'rgba(0, 0, 0, 0.75)',
+            mixBlendMode: 'multiply'
+          }}
+        ></div>
+      )}
+
       {/* Track Info Overlay */}
       {track && showTrackInfo && (
-        <div className="absolute bottom-8 left-8 right-8 text-white">
+        <div className="absolute bottom-8 left-8 right-8 text-white z-30">
           <div className="p-4">
             <div className="flex items-center space-x-4">
               {track.album.images[0] && (
