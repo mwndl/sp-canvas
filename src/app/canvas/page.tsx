@@ -42,19 +42,22 @@ export default function CanvasPage() {
   
   // Get all parameters from custom hook
   const {
+    trackUri,
+    language,
     mode,
     fadeInterval,
-    autoUpdate,
-    pollingInterval,
     showTrackInfo,
-    language,
+    showLyrics,
+    lyricsMode,
+    backgroundMode,
+    fixedColor,
     debugMode,
     videoTimeout,
-    trackId,
     maxDebugLogs,
-    showLyrics,
-    lyricsBgMode,
-    lyricsBgColor
+    autoUpdate,
+    pollingInterval,
+    trackId,
+    t
   } = useCanvasParams();
 
   // Debug logging hook
@@ -80,11 +83,28 @@ export default function CanvasPage() {
     canvasData,
     isLoading,
     error,
-    lastTrackUri
+    lastTrackUri,
+    setTrack,
+    setCanvasData,
+    setError,
+    setLastTrackUri
   } = useCanvasFetch({
     autoUpdate,
     pollingInterval,
     trackId,
+    debugMode,
+    addDebugLog,
+    playerProgress: null // Será atualizado depois
+  });
+
+  // Player progress hook
+  const {
+    playerProgress,
+    isLoading: isPlayerLoading,
+    error: playerError
+  } = usePlayerProgress({
+    enabled: showLyrics && !!track,
+    pollingInterval: 5000, // 5 segundos
     debugMode,
     addDebugLog
   });
@@ -116,18 +136,6 @@ export default function CanvasPage() {
     trackId: track?.id || null,
     albumImageUrl: track?.album.images[0]?.url || null,
     enabled: showLyrics && !!track,
-    debugMode,
-    addDebugLog
-  });
-
-  // Player progress hook
-  const {
-    playerProgress,
-    isLoading: isPlayerLoading,
-    error: playerError
-  } = usePlayerProgress({
-    enabled: showLyrics && !!track,
-    pollingInterval: 1000, // 1 segundo
     debugMode,
     addDebugLog
   });
@@ -366,8 +374,8 @@ export default function CanvasPage() {
         // Lyrics props
         showLyrics={showLyrics}
         lyrics={lyrics}
-        lyricsBgMode={lyricsBgMode}
-        lyricsBgColor={lyricsBgColor}
+        lyricsBgMode={backgroundMode}
+        lyricsBgColor={fixedColor}
         lyricsColors={lyricsColors}
         currentLyricIndex={currentLyricIndex}
         playerProgress={playerProgress ? {
@@ -376,6 +384,8 @@ export default function CanvasPage() {
         } : null}
         // Track info prop
         showTrackInfo={showTrackInfo}
+        // Lyrics mode prop
+        lyricsMode={lyricsMode}
       />
     );
   }
@@ -465,7 +475,13 @@ export default function CanvasPage() {
           className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none select-none"
         >
           {/* Exibir linha ativa e vizinhas centralizadas */}
-          <div className="w-full max-w-4xl mx-auto text-center px-6">
+          <div 
+            className={`mx-auto px-6 ${lyricsMode === 'left' ? 'w-full max-w-6xl' : 'w-full max-w-4xl text-center'}`}
+            style={{
+              transform: `translateY(-${currentLyricIndex * 0.5}vh)`,
+              transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            }}
+          >
             {/* Debug info */}
             {debugMode && (
               <div className="text-white text-sm mb-4">
@@ -477,12 +493,54 @@ export default function CanvasPage() {
             
             {/* Linhas da letra */}
             {lyrics.lines.map((line, idx) => {
+              // Verificar se é um instrumental falso e pular
+              if (line.words.trim() === '♪') {
+                const startTime = parseInt(line.startTimeMs);
+                
+                // Encontrar a linha anterior (não instrumental)
+                let previousLine = null;
+                for (let i = idx - 1; i >= 0; i--) {
+                  if (lyrics.lines[i].words.trim() !== '♪') {
+                    previousLine = lyrics.lines[i];
+                    break;
+                  }
+                }
+                
+                // Encontrar a próxima linha (não instrumental)
+                let nextLine = null;
+                for (let i = idx + 1; i < lyrics.lines.length; i++) {
+                  if (lyrics.lines[i].words.trim() !== '♪') {
+                    nextLine = lyrics.lines[i];
+                    break;
+                  }
+                }
+                
+                // Calcular distância entre linhas
+                const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : startTime;
+                const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000;
+                const timeDistance = nextTime - previousTime;
+                
+                // Se a distância for menor que 15s, pular este instrumental
+                if (timeDistance < 15000) {
+                  return null;
+                }
+              }
+              
+              // Determinar quantas linhas mostrar baseado no modo
+              const maxLines = lyricsMode === 'left' ? 3 : 2; // 3 linhas anteriores para left, 2 para 5lines
+              
               // Quando aguardando primeira linha, mostrar apenas a linha 0
               if (currentLyricIndex === -1) {
                 if (idx !== 0) return null;
               } else {
-                // Estado normal - mostrar linhas próximas à atual
-                if (Math.abs(idx - currentLyricIndex) > 2) return null;
+                // Estado normal - mostrar linhas baseado no modo
+                if (lyricsMode === 'left') {
+                  // Modo left: mostrar linhas anteriores e próximas
+                  if (idx < currentLyricIndex - 2 || idx > currentLyricIndex + 3) return null;
+                } else {
+                  // Modo 5 linhas: mostrar linhas próximas à atual
+                  if (Math.abs(idx - currentLyricIndex) > maxLines) return null;
+                }
               }
               
               const isActive = idx === currentLyricIndex;
@@ -536,28 +594,40 @@ export default function CanvasPage() {
               return (
                 <div
                   key={idx}
-                  className={`transition-all duration-500 ease-out transform
-                    ${isActive 
+                  className={`${lyricsMode === 'left' 
+                    ? isActive 
+                      ? 'text-white font-bold text-2xl md:text-3xl lg:text-4xl opacity-100'
+                      : 'text-white font-normal text-2xl md:text-3xl lg:text-4xl opacity-50'
+                    : isActive 
                       ? 'text-white font-bold text-3xl md:text-5xl lg:text-6xl scale-110 opacity-100 mb-8 md:mb-12 lg:mb-16'
                       : isNext
                       ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70 mb-4 md:mb-6 lg:mb-8'
                       : isPrevious
                       ? 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40 mb-4 md:mb-6 lg:mb-8'
                       : 'text-white font-normal text-lg md:text-xl lg:text-2xl scale-90 opacity-20 mb-2 md:mb-4 lg:mb-6'
-                    }
-                  `}
+                  }`}
                   style={{
                     color: '#fff',
                     textShadow: isActive 
                       ? '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
                       : '0 2px 4px rgba(0,0,0,0.6)',
-                    marginBottom: isActive 
-                      ? '4vh' // 4% da altura da viewport para linha ativa
-                      : isNext || isPrevious
-                      ? '2vh' // 2% da altura da viewport para linhas próximas
-                      : '1vh', // 1% da altura da viewport para linhas distantes
-                    ...(isActive && {
-                      height: '8vh', // Altura fixa para linha ativa (preparada para 2 linhas)
+                    marginBottom: lyricsMode === 'left' 
+                      ? '1vh' // Espaçamento menor para modo left
+                      : isActive 
+                        ? '4vh' // 4% da altura da viewport para linha ativa
+                        : isNext || isPrevious
+                        ? '2vh' // 2% da altura da viewport para linhas próximas
+                        : '1vh', // 1% da altura da viewport para linhas distantes
+                    textAlign: lyricsMode === 'left' ? 'left' : 'center',
+                    ...(lyricsMode === 'left' && {
+                      height: '6vh', // Altura fixa menor para modo left
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                      paddingLeft: '2rem'
+                    }),
+                    ...(isActive && lyricsMode !== 'left' && {
+                      height: '8vh', // Altura fixa para linha ativa (modo 5lines)
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -565,38 +635,64 @@ export default function CanvasPage() {
                   }}
                 >
                   <span className="inline-block">
-                    {isActive && line.words.trim() === '♪' ? (
-                      // Animação para instrumental
+                    {line.words.trim() === '♪' ? (
+                      // Verificar se a distância entre linhas é superior a 15s antes de mostrar instrumental
                       (() => {
                         const currentTimeMs = playerProgress?.progress || 0;
                         const startTime = parseInt(line.startTimeMs);
-                        const nextLine = lyrics.lines[idx + 1];
-                        const endTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000; // 10s se não houver próxima linha
+                        
+                        // Encontrar a linha anterior (não instrumental)
+                        let previousLine = null;
+                        for (let i = idx - 1; i >= 0; i--) {
+                          if (lyrics.lines[i].words.trim() !== '♪') {
+                            previousLine = lyrics.lines[i];
+                            break;
+                          }
+                        }
+                        
+                        // Encontrar a próxima linha (não instrumental)
+                        let nextLine = null;
+                        for (let i = idx + 1; i < lyrics.lines.length; i++) {
+                          if (lyrics.lines[i].words.trim() !== '♪') {
+                            nextLine = lyrics.lines[i];
+                            break;
+                          }
+                        }
+                        
+                        // Calcular distância entre linhas
+                        const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : startTime;
+                        const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000;
+                        const timeDistance = nextTime - previousTime;
+                        
+                        // Mostrar instrumental apenas se a distância for superior a 15 segundos
+                        if (timeDistance < 15000) {
+                          return null; // Não mostrar nada para instrumentais curtos
+                        }
+                        
+                        const endTime = nextTime;
                         const duration = endTime - startTime;
                         const elapsed = currentTimeMs - startTime;
                         const progress = Math.min(Math.max(elapsed / duration, 0), 1);
                         
                         if (debugMode) {
-                          console.log('🎵 Instrumental progress:', progress);
+                          console.log('🎵 Instrumental progress:', progress, 'timeDistance:', timeDistance);
                         }
                         
                         return (
                           <div className="flex items-center justify-center space-x-2">
-                            {[0, 1, 2, 3].map((i) => (
-                              <span 
-                                key={i} 
-                                className={`text-4xl md:text-6xl lg:text-7xl transition-all duration-700 ease-out transform
+                            {[0, 1, 2].map((i) => (
+                              <div
+                                key={i}
+                                className={`w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full transition-all duration-700 ease-out transform
                                   ${progress >= (i + 1) * 0.25 
-                                    ? 'opacity-100 scale-100' 
-                                    : 'opacity-30 scale-75'
+                                    ? 'bg-white scale-100 opacity-100' 
+                                    : 'bg-white/30 scale-75 opacity-50'
                                   }
                                 `}
                                 style={{
                                   animationDelay: `${i * 200}ms`,
                                 }}
-                              >
-                                ♪
-                              </span>
+                              />
                             ))}
                           </div>
                         );

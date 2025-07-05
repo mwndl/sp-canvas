@@ -16,7 +16,7 @@ interface UsePlayerProgressOptions {
 
 export const usePlayerProgress = ({
   enabled,
-  pollingInterval,
+  pollingInterval = 5000, // 5 segundos
   debugMode,
   addDebugLog
 }: UsePlayerProgressOptions) => {
@@ -24,6 +24,10 @@ export const usePlayerProgress = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef(0);
+  const maxRetries = 3;
+  const lastUpdateRef = useRef<number>(0);
+  const estimatedProgressRef = useRef<PlayerProgress | null>(null);
 
   const fetchPlayerProgress = async () => {
     if (!enabled) return;
@@ -36,10 +40,40 @@ export const usePlayerProgress = ({
       
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Tratamento específico para rate limit (429)
+        if (response.status === 429) {
+          console.warn('⚠️ Rate limit exceeded (player progress), backing off...');
+          if (debugMode) {
+            addDebugLog('WARNING', 'Rate limit exceeded (player progress), backing off...');
+          }
+          
+          // Backoff exponencial: 2^retryCount * 1000ms
+          const backoffDelay = Math.min(Math.pow(2, retryCountRef.current) * 1000, 30000);
+          retryCountRef.current = Math.min(retryCountRef.current + 1, maxRetries);
+          
+          if (retryCountRef.current <= maxRetries) {
+            setTimeout(() => {
+              fetchPlayerProgress();
+            }, backoffDelay);
+            return;
+          } else {
+            setError('Rate limit exceeded. Please try again later.');
+            return;
+          }
+        }
+        
         throw new Error(errorData.error || 'Failed to fetch player progress');
       }
 
       const data = await response.json();
+      
+      // Reset retry count on successful request
+      retryCountRef.current = 0;
+      
+      // Salvar dados reais e timestamp
+      lastUpdateRef.current = Date.now();
+      estimatedProgressRef.current = data;
       
       setPlayerProgress(data);
       
@@ -56,6 +90,36 @@ export const usePlayerProgress = ({
       setIsLoading(false);
     }
   };
+
+  // Função para estimar progresso atual
+  const getEstimatedProgress = (): PlayerProgress | null => {
+    if (!estimatedProgressRef.current || !estimatedProgressRef.current.isPlaying) {
+      return estimatedProgressRef.current;
+    }
+
+    const now = Date.now();
+    const timeSinceUpdate = now - lastUpdateRef.current;
+    const estimatedProgress = estimatedProgressRef.current.progress + timeSinceUpdate;
+
+    return {
+      ...estimatedProgressRef.current,
+      progress: estimatedProgress
+    };
+  };
+
+  // Atualizar progresso estimado a cada 100ms para sincronização suave
+  useEffect(() => {
+    if (enabled && estimatedProgressRef.current?.isPlaying) {
+      const interval = setInterval(() => {
+        const estimated = getEstimatedProgress();
+        if (estimated) {
+          setPlayerProgress(estimated);
+        }
+      }, 100); // Atualizar a cada 100ms para sincronização suave
+
+      return () => clearInterval(interval);
+    }
+  }, [enabled, estimatedProgressRef.current?.isPlaying]);
 
   // Polling para manter sincronização
   useEffect(() => {

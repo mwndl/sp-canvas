@@ -17,12 +17,14 @@ export interface Translations {
   showTrackInfo: string;
   showTrackInfoHelp: string;
   lyrics: string;
-  showLyrics: string;
-  showLyricsHelp: string;
+  lyricsHelp: string;
   backgroundMode: string;
   themeColor: string;
   fixedColor: string;
   albumCover: string;
+  lyricsMode: string;
+  lyricsMode5Lines: string;
+  lyricsModeLeft: string;
   fallbacks: string;
   fallbacksDescription: string;
   displayMode: string;
@@ -57,12 +59,14 @@ const translations: Record<Language, Translations> = {
     showTrackInfo: 'Exibir informações da faixa',
     showTrackInfoHelp: 'Mostra título, artista e álbum sobrepostos no canvas',
     lyrics: 'Letra da Música',
-    showLyrics: 'Exibir letra da música',
-    showLyricsHelp: 'Mostra a letra sincronizada da música atual',
+    lyricsHelp: 'Mostra a letra sincronizada da música atual',
     backgroundMode: 'Modo de Fundo',
     themeColor: 'Cor tema (extraída da capa)',
     fixedColor: 'Cor fixa',
     albumCover: 'Capa do álbum',
+    lyricsMode: 'Modo de Letras',
+    lyricsMode5Lines: '5 Linhas',
+    lyricsModeLeft: 'Esquerda',
     fallbacks: 'Fallbacks',
     fallbacksDescription: 'Configurações para quando não há canvas disponível (capa do álbum) ou música tocando (relógio)',
     displayMode: 'Modo de Exibição',
@@ -95,12 +99,14 @@ const translations: Record<Language, Translations> = {
     showTrackInfo: 'Show track information',
     showTrackInfoHelp: 'Shows title, artist and album overlaid on canvas',
     lyrics: 'Song Lyrics',
-    showLyrics: 'Show song lyrics',
-    showLyricsHelp: 'Shows synchronized lyrics of the current song',
+    lyricsHelp: 'Shows synchronized lyrics of the current song',
     backgroundMode: 'Background Mode',
     themeColor: 'Theme color (extracted from cover)',
     fixedColor: 'Fixed color',
     albumCover: 'Album cover',
+    lyricsMode: 'Lyrics Mode',
+    lyricsMode5Lines: '5 Lines',
+    lyricsModeLeft: 'Left',
     fallbacks: 'Fallbacks',
     fallbacksDescription: 'Settings for when no canvas is available (album cover) or no music is playing (clock)',
     displayMode: 'Display Mode',

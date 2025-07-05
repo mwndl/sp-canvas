@@ -32,14 +32,16 @@ interface UseCanvasFetchOptions {
   trackId: string | null;
   debugMode: boolean;
   addDebugLog: (type: string, message: string) => void;
+  playerProgress?: { trackId: string | null } | null; // Adicionar player progress para detectar mudanças
 }
 
 export const useCanvasFetch = ({
   autoUpdate,
-  pollingInterval,
+  pollingInterval = 5000, // Aumentado para 5 segundos por padrão
   trackId,
   debugMode,
-  addDebugLog
+  addDebugLog,
+  playerProgress
 }: UseCanvasFetchOptions) => {
   const [track, setTrack] = useState<Track | null>(null);
   const [canvasData, setCanvasData] = useState<CanvasData | null>(null);
@@ -47,6 +49,8 @@ export const useCanvasFetch = ({
   const [error, setError] = useState<string | null>(null);
   const [lastTrackUri, setLastTrackUri] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef(0);
+  const maxRetries = 3;
 
   const fetchCanvas = useCallback(async (specificTrackId?: string) => {
     try {
@@ -70,12 +74,35 @@ export const useCanvasFetch = ({
       if (!response.ok) {
         const errorData = await response.json();
         
+        // Tratamento específico para rate limit (429)
+        if (response.status === 429) {
+          console.warn('⚠️ Rate limit exceeded, backing off...');
+          if (debugMode) {
+            addDebugLog('WARNING', 'Rate limit exceeded, backing off...');
+          }
+          
+          // Backoff exponencial: 2^retryCount * 1000ms
+          const backoffDelay = Math.min(Math.pow(2, retryCountRef.current) * 1000, 30000);
+          retryCountRef.current = Math.min(retryCountRef.current + 1, maxRetries);
+          
+          if (retryCountRef.current <= maxRetries) {
+            setTimeout(() => {
+              fetchCanvas(specificTrackId);
+            }, backoffDelay);
+            return;
+          } else {
+            setError('Rate limit exceeded. Please try again later.');
+            return;
+          }
+        }
+        
         // If no track is playing AND it's not a specific Track ID, it's not an error
         if (errorData.error === 'No track currently playing' && !specificTrackId) {
           setTrack(null);
           setCanvasData(null);
           setLastTrackUri(null);
           setError(null);
+          retryCountRef.current = 0; // Reset retry count on success
           console.log('⏰ No track playing - showing clock');
           if (debugMode) {
             addDebugLog('INFO', 'No track playing - showing clock');
@@ -97,6 +124,9 @@ export const useCanvasFetch = ({
       }
 
       const data = await response.json();
+      
+      // Reset retry count on successful request
+      retryCountRef.current = 0;
       
       // Verificar se a música mudou
       const currentTrackUri = data.track?.uri || data.trackUri;
@@ -122,26 +152,31 @@ export const useCanvasFetch = ({
     }
   }, [debugMode, addDebugLog, lastTrackUri]);
 
+  // Detectar mudança de música via player progress
+  useEffect(() => {
+    if (playerProgress?.trackId && !trackId) {
+      // Se o trackId do player mudou, buscar novo Canvas
+      const currentTrackId = playerProgress.trackId;
+      if (currentTrackId !== lastTrackUri?.split(':').pop()) {
+        console.log('🎵 Track changed detected via player progress, fetching new canvas...');
+        if (debugMode) {
+          addDebugLog('INFO', `Track changed detected via player progress: ${currentTrackId}`);
+        }
+        fetchCanvas();
+      }
+    }
+  }, [playerProgress?.trackId, trackId, lastTrackUri, debugMode, addDebugLog, fetchCanvas]);
+
   // Polling to check for track changes
   useEffect(() => {
-    // Only do polling if autoUpdate is enabled AND it's not a specific track
-    if (autoUpdate && !trackId) {
-      console.log(`🔄 Starting automatic polling for current track (every ${pollingInterval/1000}s)`);
-      // Check at configured interval if track changed
-      pollingIntervalRef.current = setInterval(() => {
-        fetchCanvas();
-      }, pollingInterval);
-
-      return () => {
-        if (pollingIntervalRef.current) {
-          console.log('⏹️ Stopping automatic polling');
-          clearInterval(pollingIntervalRef.current);
-        }
-      };
-    } else if (trackId) {
-      console.log('🎯 Specific track detected - polling disabled');
+    // Não fazer polling automático para Canvas
+    // O Canvas só deve ser buscado quando a música mudar
+    if (trackId) {
+      console.log('🎯 Specific track detected - no polling needed');
+    } else {
+      console.log('🎵 Canvas will be fetched only when track changes');
     }
-  }, [autoUpdate, trackId, pollingInterval, fetchCanvas]);
+  }, [trackId]);
 
   // Initial fetch
   useEffect(() => {

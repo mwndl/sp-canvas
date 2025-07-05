@@ -18,6 +18,7 @@ export default function Home() {
   const [trackId, setTrackId] = useState('');
   const [showTrackInfo, setShowTrackInfo] = useState(true);
   const [showLyrics, setShowLyrics] = useState(false);
+  const [lyricsMode, setLyricsMode] = useState<'5lines' | 'left'>('5lines');
   const [backgroundMode, setBackgroundMode] = useState<'theme' | 'fixed' | 'cover'>('theme');
   const [fixedColor, setFixedColor] = useState('#000000');
   const [language, setLanguage] = useState<Language>('en');
@@ -94,6 +95,7 @@ export default function Home() {
         if (backgroundMode === 'fixed') {
           canvasUrl.searchParams.set('bgColor', fixedColor);
         }
+        canvasUrl.searchParams.set('lyricsMode', lyricsMode);
       }
       
       // Adicionar idioma
@@ -270,11 +272,11 @@ export default function Home() {
                       className="mr-2 accent-blue-400"
                     />
                     <span className="text-sm font-medium text-gray-300">
-                      {t.showLyrics}
+                      {t.lyrics}
                     </span>
                   </label>
                   <p className="text-xs text-gray-400 mt-1">
-                    {t.showLyricsHelp}
+                    {t.lyricsHelp}
                   </p>
                 </div>
               </div>
@@ -292,6 +294,36 @@ export default function Home() {
                 </h3>
                 
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t.lyricsMode}
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="lyricsMode"
+                          value="5lines"
+                          checked={lyricsMode === '5lines'}
+                          onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
+                          className="mr-2 accent-blue-400"
+                        />
+                        <span className="text-sm text-gray-300">{t.lyricsMode5Lines}</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="lyricsMode"
+                          value="left"
+                          checked={lyricsMode === 'left'}
+                          onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
+                          className="mr-2 accent-blue-400"
+                        />
+                        <span className="text-sm text-gray-300">{t.lyricsModeLeft}</span>
+                      </label>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       {t.backgroundMode}
