@@ -154,18 +154,40 @@ export const useCanvasFetch = ({
 
   // Detectar mudança de música via player progress
   useEffect(() => {
-    if (playerProgress?.trackId && !trackId) {
-      // Se o trackId do player mudou, buscar novo Canvas
+    if (playerProgress?.trackId) {
       const currentTrackId = playerProgress.trackId;
-      if (currentTrackId !== lastTrackUri?.split(':').pop()) {
-        console.log('🎵 Track changed detected via player progress, fetching new canvas...');
+      const lastTrackId = track?.id || lastTrackUri?.split(':').pop();
+      
+      console.log('🔍 Checking track change:', {
+        currentTrackId,
+        lastTrackId,
+        trackId: track?.id,
+        lastTrackUri,
+        playerProgressTrackId: playerProgress.trackId
+      });
+      
+      // Se o trackId mudou, buscar novo Canvas
+      if (currentTrackId !== lastTrackId) {
+        console.log('🎵 Track changed detected via player progress:', currentTrackId, '->', lastTrackId);
         if (debugMode) {
-          addDebugLog('INFO', `Track changed detected via player progress: ${currentTrackId}`);
+          addDebugLog('INFO', `Track changed detected via player progress: ${lastTrackId} -> ${currentTrackId}`);
         }
         fetchCanvas();
+      } else {
+        console.log('✅ Same track, no change detected');
       }
+    } else if (playerProgress && !playerProgress.trackId && lastTrackUri) {
+      // Se não há trackId mas havia uma música antes, pode ter parado
+      console.log('⏸️ No track playing detected via player progress');
+      if (debugMode) {
+        addDebugLog('INFO', 'No track playing detected via player progress');
+      }
+      setTrack(null);
+      setCanvasData(null);
+      setLastTrackUri(null);
+      setError(null);
     }
-  }, [playerProgress?.trackId, trackId, lastTrackUri, debugMode, addDebugLog, fetchCanvas]);
+  }, [playerProgress?.trackId, track?.id, lastTrackUri, debugMode, addDebugLog, fetchCanvas]);
 
   // Polling to check for track changes
   useEffect(() => {

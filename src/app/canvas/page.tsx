@@ -77,6 +77,18 @@ export default function CanvasPage() {
   // Keyboard controls hook
   useKeyboardControls();
 
+  // Player progress hook
+  const {
+    playerProgress,
+    isLoading: isPlayerLoading,
+    error: playerError
+  } = usePlayerProgress({
+    enabled: true, // Sempre habilitado para detectar mudanças de música
+    pollingInterval: 5000, // 5 segundos
+    debugMode,
+    addDebugLog
+  });
+
   // Canvas fetch hook
   const {
     track,
@@ -94,19 +106,7 @@ export default function CanvasPage() {
     trackId,
     debugMode,
     addDebugLog,
-    playerProgress: null // Será atualizado depois
-  });
-
-  // Player progress hook
-  const {
-    playerProgress,
-    isLoading: isPlayerLoading,
-    error: playerError
-  } = usePlayerProgress({
-    enabled: showLyrics && !!track,
-    pollingInterval: 5000, // 5 segundos
-    debugMode,
-    addDebugLog
+    playerProgress // Passar o playerProgress para detectar mudanças
   });
 
   // Clock hook
@@ -431,7 +431,7 @@ export default function CanvasPage() {
       </video>
 
       {/* Overlay para letras (entre Canvas e letra) */}
-      {showLyrics && lyrics && (
+      {showLyrics && lyrics && backgroundMode !== 'cover' && (
         <div 
           className="absolute inset-0 z-10"
           style={{
@@ -478,8 +478,10 @@ export default function CanvasPage() {
           <div 
             className={`mx-auto px-6 ${lyricsMode === 'left' ? 'w-full max-w-6xl' : 'w-full max-w-4xl text-center'}`}
             style={{
-              transform: `translateY(-${currentLyricIndex * 0.5}vh)`,
-              transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              ...(lyricsMode === 'left' && {
+                transform: `translateY(-${currentLyricIndex * 0.3}vh)`,
+                transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              })
             }}
           >
             {/* Debug info */}

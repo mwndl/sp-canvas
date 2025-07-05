@@ -149,8 +149,10 @@ export const FallbackDisplay = ({
           <div 
             className={`mx-auto px-6 ${lyricsMode === 'left' ? 'w-full max-w-6xl' : 'w-full max-w-4xl text-center'}`}
             style={{
-              transform: `translateY(-${currentLyricIndex * 0.5}vh)`,
-              transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              ...(lyricsMode === 'left' && {
+                transform: `translateY(-${currentLyricIndex * 0.3}vh)`,
+                transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              })
             }}
           >
             {lyrics.lines.map((line, idx) => {
