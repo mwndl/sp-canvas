@@ -337,11 +337,18 @@ export default function CanvasPage() {
           const divWidthPercent = (divWidth / viewportWidth) * 100;
           const divHeightPercent = (divHeight / viewportHeight) * 100;
           
+          // Ajustar limites baseados no tipo de conteúdo
+          // Para capa do álbum (mais alta), usar limites mais conservadores
+          // Para relógio (mais baixo), usar limites mais amplos
+          const isAlbumCover = track && track.album.images[0];
+          const widthMultiplier = isAlbumCover ? 1.2 : 1.0; // Aumentar margem para capa do álbum
+          const heightMultiplier = isAlbumCover ? 1.1 : 1.0; // Aumentar margem para capa do álbum
+          
           // Calcular limites onde a borda da div toca a borda da tela
-          const leftLimit = divWidthPercent / 2;   // Centro da div quando borda esquerda toca a tela
-          const rightLimit = 100 - (divWidthPercent / 2); // Centro da div quando borda direita toca a tela
-          const topLimit = divHeightPercent / 2;    // Centro da div quando borda superior toca a tela
-          const bottomLimit = 100 - (divHeightPercent / 2); // Centro da div quando borda inferior toca a tela
+          const leftLimit = (divWidthPercent * widthMultiplier) / 2;   // Centro da div quando borda esquerda toca a tela
+          const rightLimit = 100 - ((divWidthPercent * widthMultiplier) / 2); // Centro da div quando borda direita toca a tela
+          const topLimit = (divHeightPercent * heightMultiplier) / 2;    // Centro da div quando borda superior toca a tela
+          const bottomLimit = 100 - ((divHeightPercent * heightMultiplier) / 2); // Centro da div quando borda inferior toca a tela
           
           // Bater nas bordas - inverte velocidade quando toca o limite
           if (newX <= leftLimit || newX >= rightLimit) {
@@ -413,7 +420,7 @@ export default function CanvasPage() {
   // Mostrar capa do álbum se não há canvas OU se o vídeo falhou OU se não há música
   if (!canvasData || !canvasData.canvasesList.length || videoFailed || !track) {
     return (
-      <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center">
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
         {track && track.album.images[0] ? (
           <div 
             ref={fallbackRef}
@@ -427,11 +434,12 @@ export default function CanvasPage() {
               transform: (mode === 'fade' || mode === 'dvd') ? 'translate(-50%, -50%)' : 'none'
             }}
           >
-            <div className="space-y-4">
+            <div className="space-y-4" style={{ width: '256px', flexShrink: 0 }}>
               <img
                 src={track.album.images[0].url}
                 alt={track.album.name}
-                className="w-64 h-64 rounded-lg shadow-2xl mx-auto"
+                className="w-64 h-64 rounded-lg shadow-2xl mx-auto object-cover"
+                style={{ minWidth: '256px', minHeight: '256px' }}
               />
               <div>
                 <h2 className="text-2xl font-bold mb-2">{track.name}</h2>
