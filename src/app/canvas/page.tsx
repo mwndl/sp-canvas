@@ -69,6 +69,10 @@ export default function CanvasPage() {
       let url = '/api/spotify/canvas';
       if (specificTrackId) {
         url += `?trackUri=spotify:track:${specificTrackId}`;
+        console.log('🎯 Buscando Track ID específico:', specificTrackId);
+        console.log('🔗 URL da requisição:', url);
+      } else {
+        console.log('🎵 Buscando música atual');
       }
 
       const response = await fetch(url);
@@ -76,13 +80,20 @@ export default function CanvasPage() {
       if (!response.ok) {
         const errorData = await response.json();
         
-        // Se não há música tocando, não é um erro - é um caso normal
-        if (errorData.error === 'No track currently playing') {
+        // Se não há música tocando E não é um Track ID específico, não é um erro
+        if (errorData.error === 'No track currently playing' && !specificTrackId) {
           setTrack(null);
           setCanvasData(null);
           setLastTrackUri(null);
           setError(null);
           console.log('⏰ Nenhuma música tocando - mostrando relógio');
+          return;
+        }
+        
+        // Se é um Track ID específico e deu erro, mostrar o erro
+        if (specificTrackId) {
+          console.error('❌ Erro ao buscar Track ID específico:', errorData.error);
+          setError(`Erro ao buscar música: ${errorData.error}`);
           return;
         }
         
@@ -223,7 +234,11 @@ export default function CanvasPage() {
 
   // Polling para verificar mudanças na música
   useEffect(() => {
-    if (autoUpdate && !searchParams.get('trackUri')) {
+    const trackUri = searchParams.get('trackUri');
+    
+    // Só fazer polling se autoUpdate estiver ativado E não for uma faixa específica
+    if (autoUpdate && !trackUri) {
+      console.log('🔄 Iniciando polling automático para música atual');
       // Verificar a cada 5 segundos se a música mudou
       pollingIntervalRef.current = setInterval(() => {
         fetchCanvas();
@@ -231,16 +246,25 @@ export default function CanvasPage() {
 
       return () => {
         if (pollingIntervalRef.current) {
+          console.log('⏹️ Parando polling automático');
           clearInterval(pollingIntervalRef.current);
         }
       };
+    } else if (trackUri) {
+      console.log('🎯 Faixa específica detectada - polling desabilitado');
     }
   }, [autoUpdate, searchParams, lastTrackUri]);
 
   useEffect(() => {
     const fetchInitialCanvas = async () => {
       const trackUri = searchParams.get('trackUri');
-      await fetchCanvas(trackUri || undefined);
+      if (trackUri) {
+        // Extrair o ID da música do URI completo
+        const trackId = trackUri.replace('spotify:track:', '');
+        await fetchCanvas(trackId);
+      } else {
+        await fetchCanvas();
+      }
     };
 
     fetchInitialCanvas();

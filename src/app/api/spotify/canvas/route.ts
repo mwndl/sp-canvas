@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const trackUri = searchParams.get('trackUri');
 
+    console.log('🔍 API Canvas - trackUri recebido:', trackUri);
+
     if (!trackUri) {
       // Se não foi fornecido trackUri, buscar a música atual
       const currentTrack = await getCurrentTrack();
@@ -33,9 +35,14 @@ export async function GET(request: NextRequest) {
       });
     } else {
       // Se foi fornecido trackUri, buscar Canvas para essa música específica
+      console.log('🎯 API Canvas - Buscando Canvas para Track URI:', trackUri);
+      
       const canvasData = await getCanvases(trackUri);
       
+      console.log('📊 API Canvas - Resultado do Canvas:', canvasData ? 'Encontrado' : 'Não encontrado');
+      
       if (!canvasData) {
+        console.log('❌ API Canvas - Nenhum Canvas disponível para:', trackUri);
         return NextResponse.json(
           { error: 'No canvas available for this track' },
           { status: 404 }

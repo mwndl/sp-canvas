@@ -11,6 +11,8 @@ export default function Home() {
   const [mode, setMode] = useState<ScreensaverMode>('static');
   const [fadeInterval, setFadeInterval] = useState(3000);
   const [autoUpdate, setAutoUpdate] = useState(true);
+  const [searchMode, setSearchMode] = useState<'auto' | 'specific'>('auto');
+  const [trackId, setTrackId] = useState('');
   const router = useRouter();
 
   const startScreensaver = async () => {
@@ -18,23 +20,17 @@ export default function Home() {
     setError(null);
 
     try {
-      const response = await fetch('/api/spotify/canvas');
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        // Se não há música tocando, ainda podemos iniciar o screensaver
-        if (errorData.error === 'No track currently playing') {
-          console.log('⏰ Nenhuma música tocando - iniciando screensaver com relógio');
-        } else {
-          throw new Error(errorData.error || 'Failed to fetch canvas');
-        }
-              } else {
-          // Track data available but not needed for navigation
-        }
-      
-      // Navigate to canvas display with mode parameters
+      // Se for modo específico, validar se tem Track ID
+      if (searchMode === 'specific' && !trackId.trim()) {
+        setError('Por favor, insira um Track ID válido');
+        setIsLoading(false);
+        return;
+      }
+
+      // Construir URL com todos os parâmetros
       const canvasUrl = new URL('/canvas', window.location.origin);
+      
+      // Adicionar parâmetros de configuração
       if (mode !== 'static') {
         canvasUrl.searchParams.set('mode', mode);
         if (mode === 'fade') {
@@ -44,6 +40,12 @@ export default function Home() {
       if (!autoUpdate) {
         canvasUrl.searchParams.set('autoUpdate', 'false');
       }
+      
+      // Adicionar Track ID se for modo específico
+      if (searchMode === 'specific' && trackId.trim()) {
+        canvasUrl.searchParams.set('trackUri', `spotify:track:${trackId.trim()}`);
+      }
+
       router.push(canvasUrl.toString());
     } catch (err) {
       console.error('Error starting screensaver:', err);
@@ -66,6 +68,55 @@ export default function Home() {
             <h3 className="font-semibold text-white mb-2">Configurações</h3>
             
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Buscar Música
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="searchMode"
+                      value="auto"
+                      checked={searchMode === 'auto'}
+                      onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
+                      className="mr-2 accent-blue-400"
+                    />
+                    <span className="text-sm text-gray-300">Detectar automaticamente</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="searchMode"
+                      value="specific"
+                      checked={searchMode === 'specific'}
+                      onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
+                      className="mr-2 accent-blue-400"
+                    />
+                    <span className="text-sm text-gray-300">Buscar faixa específica</span>
+                  </label>
+                </div>
+              </div>
+
+              {searchMode === 'specific' && (
+                <div>
+                  <label htmlFor="trackId" className="block text-sm font-medium text-gray-300 mb-2">
+                    Track ID
+                  </label>
+                  <input
+                    type="text"
+                    id="trackId"
+                    value={trackId}
+                    onChange={(e) => setTrackId(e.target.value)}
+                    placeholder="Ex: 4iV5W9uYEdYUVa79Axb7Rh"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Encontre o Track ID na URL do Spotify: spotify.com/track/[ID]
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Modo de Screensaver
@@ -131,12 +182,18 @@ export default function Home() {
                     type="checkbox"
                     checked={autoUpdate}
                     onChange={(e) => setAutoUpdate(e.target.checked)}
-                    className="mr-2 accent-blue-400"
+                    disabled={searchMode === 'specific'}
+                    className="mr-2 accent-blue-400 disabled:opacity-50"
                   />
-                  <span className="text-sm font-medium text-gray-300">
+                  <span className={`text-sm font-medium ${searchMode === 'specific' ? 'text-gray-500' : 'text-gray-300'}`}>
                     Atualizar automaticamente (a cada 5s)
                   </span>
                 </label>
+                {searchMode === 'specific' && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Auto-update desabilitado para faixas específicas
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -152,7 +209,7 @@ export default function Home() {
                 Iniciando...
               </div>
             ) : (
-              'Iniciar Screensaver'
+              searchMode === 'auto' ? 'Iniciar Screensaver' : 'Buscar e Iniciar'
             )}
           </button>
 
