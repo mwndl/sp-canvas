@@ -11,6 +11,8 @@ interface DebugPanelProps {
 }
 
 export const DebugPanel = ({ debugLogs, maxLogs, onClearLogs }: DebugPanelProps) => {
+  const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : 'Server-side';
+  
   const getLogTypeStyle = (type: string) => {
     switch (type) {
       case 'ERROR': return 'bg-red-500 text-white';
@@ -44,6 +46,12 @@ export const DebugPanel = ({ debugLogs, maxLogs, onClearLogs }: DebugPanelProps)
         >
           Clear
         </button>
+      </div>
+      
+      {/* User Agent Info */}
+      <div className="mb-3 p-2 bg-gray-800 rounded text-xs">
+        <div className="font-semibold text-gray-300 mb-1">🌐 User Agent:</div>
+        <div className="text-gray-400 break-all">{userAgent}</div>
       </div>
       <div className="space-y-1">
         {debugLogs.map((log, index) => (
