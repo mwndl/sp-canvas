@@ -45,11 +45,13 @@ export default function Home() {
           canvasUrl.searchParams.set('fade', (fadeInterval * 1000).toString());
         }
       }
-      if (!autoUpdate) {
-        canvasUrl.searchParams.set('auto', 'false');
-      }
-      if (autoUpdate) {
-        canvasUrl.searchParams.set('poll', (pollingInterval * 1000).toString());
+      if (searchMode === 'auto') {
+        if (!autoUpdate) {
+          canvasUrl.searchParams.set('auto', 'false');
+        }
+        if (autoUpdate) {
+          canvasUrl.searchParams.set('poll', (pollingInterval * 1000).toString());
+        }
       }
       
       // Adicionar configuração de exibir informações da faixa
