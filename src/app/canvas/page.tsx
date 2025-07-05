@@ -50,12 +50,12 @@ export default function CanvasPage() {
   const searchParams = useSearchParams();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Pegar modo do screensaver da URL
-  const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
-  const fadeInterval = parseInt(searchParams.get('fadeInterval') || '3000');
-  const autoUpdate = searchParams.get('autoUpdate') !== 'false'; // true por padrão
-  const pollingInterval = parseInt(searchParams.get('pollingInterval') || '5000');
-  const showTrackInfo = searchParams.get('showTrackInfo') !== 'false'; // true por padrão
+  // Pegar modo do screensaver da URL (usando siglas)
+  const mode = (searchParams.get('mode') as ScreensaverMode) || 'static'; // manter mode
+  const fadeInterval = parseInt(searchParams.get('fade') || '3000'); // fade
+  const autoUpdate = searchParams.get('auto') !== 'false'; // auto
+  const pollingInterval = parseInt(searchParams.get('poll') || '5000'); // poll
+  const showTrackInfo = searchParams.get('info') !== 'false'; // info
 
   // Atualizar relógio a cada segundo
   useEffect(() => {
@@ -236,7 +236,7 @@ export default function CanvasPage() {
 
   // Polling para verificar mudanças na música
   useEffect(() => {
-    const trackUri = searchParams.get('trackUri');
+    const trackUri = searchParams.get('track'); // track ao invés de trackUri
     
     // Só fazer polling se autoUpdate estiver ativado E não for uma faixa específica
     if (autoUpdate && !trackUri) {
@@ -259,7 +259,7 @@ export default function CanvasPage() {
 
   useEffect(() => {
     const fetchInitialCanvas = async () => {
-      const trackUri = searchParams.get('trackUri');
+      const trackUri = searchParams.get('track'); // track ao invés de trackUri
       if (trackUri) {
         // Extrair o ID da música do URI completo
         const trackId = trackUri.replace('spotify:track:', '');

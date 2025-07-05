@@ -32,28 +32,28 @@ export default function Home() {
       // Construir URL com todos os parâmetros
       const canvasUrl = new URL('/canvas', window.location.origin);
       
-      // Adicionar parâmetros de configuração
+      // Adicionar parâmetros de configuração com siglas
       if (mode !== 'static') {
-        canvasUrl.searchParams.set('mode', mode);
+        canvasUrl.searchParams.set('mode', mode); // manter mode
         if (mode === 'fade') {
-          canvasUrl.searchParams.set('fadeInterval', (fadeInterval * 1000).toString());
+          canvasUrl.searchParams.set('fade', (fadeInterval * 1000).toString()); // fadeInterval -> fade
         }
       }
       if (!autoUpdate) {
-        canvasUrl.searchParams.set('autoUpdate', 'false');
+        canvasUrl.searchParams.set('auto', 'false'); // autoUpdate -> auto
       }
       if (autoUpdate) {
-        canvasUrl.searchParams.set('pollingInterval', (pollingInterval * 1000).toString());
+        canvasUrl.searchParams.set('poll', (pollingInterval * 1000).toString()); // pollingInterval -> poll
       }
       
       // Adicionar configuração de exibir informações da faixa
       if (!showTrackInfo) {
-        canvasUrl.searchParams.set('showTrackInfo', 'false');
+        canvasUrl.searchParams.set('info', 'false'); // showTrackInfo -> info
       }
       
       // Adicionar Track ID se for modo específico
       if (searchMode === 'specific' && trackId.trim()) {
-        canvasUrl.searchParams.set('trackUri', `spotify:track:${trackId.trim()}`);
+        canvasUrl.searchParams.set('track', `spotify:track:${trackId.trim()}`); // trackUri -> track
       }
 
       router.push(canvasUrl.toString());
