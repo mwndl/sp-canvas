@@ -26,6 +26,7 @@ import { useScreensaverAnimation } from '../../hooks/useScreensaverAnimation';
 import { useCanvasFetch } from '../../hooks/useCanvasFetch';
 import { useClock } from '../../hooks/useClock';
 import { useCanvasRotation } from '../../hooks/useCanvasRotation';
+import { useLyricsFetch } from '../../hooks/useLyricsFetch';
 import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
@@ -49,7 +50,10 @@ export default function CanvasPage() {
     debugMode,
     videoTimeout,
     trackId,
-    maxDebugLogs
+    maxDebugLogs,
+    showLyrics,
+    lyricsBgMode,
+    lyricsBgColor
   } = useCanvasParams();
 
   // Debug logging hook
@@ -99,6 +103,21 @@ export default function CanvasPage() {
     fadeInterval,
     hasCanvas: !!(canvasData?.canvasesList.length),
     hasTrack: !!track
+  });
+
+  // Lyrics fetch hook
+  const {
+    lyrics,
+    colors: lyricsColors,
+    isLoading: isLyricsLoading,
+    error: lyricsError
+  } = useLyricsFetch({
+    trackId: track?.id || null,
+    albumImageUrl: track?.album.images[0]?.url || null,
+    accessToken: null, // TODO: obter accessToken do contexto/autenticação
+    enabled: showLyrics && !!track,
+    debugMode,
+    addDebugLog
   });
 
   // Initial debug log if active
@@ -350,6 +369,44 @@ export default function CanvasPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lyrics Overlay */}
+      {showLyrics && lyrics && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none select-none"
+          style={{
+            // Fundo de acordo com lyricsBgMode
+            background:
+              lyricsBgMode === 'theme' && lyricsColors?.background
+                ? `#${(lyricsColors.background >>> 0).toString(16).padStart(6, '0')}`
+                : lyricsBgMode === 'fixed' && lyricsBgColor
+                ? lyricsBgColor
+                : lyricsBgMode === 'cover' && track?.album.images[0]?.url
+                ? `url(${track.album.images[0].url}) center/cover no-repeat`
+                : 'transparent',
+            opacity: 0.85,
+            transition: 'background 0.5s, opacity 0.5s',
+            mixBlendMode: 'multiply',
+          }}
+        >
+          {/* Exemplo: renderizar todas as linhas (depois sincronizar) */}
+          <div className="text-center px-4">
+            {lyrics.lines.map((line, idx) => (
+              <div
+                key={idx}
+                className="text-3xl md:text-5xl font-bold mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                style={{
+                  color: lyricsColors?.text
+                    ? `#${(lyricsColors.text >>> 0).toString(16).padStart(6, '0')}`
+                    : '#fff',
+                }}
+              >
+                {line.words}
+              </div>
+            ))}
           </div>
         </div>
       )}

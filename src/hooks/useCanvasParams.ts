@@ -3,6 +3,8 @@ import { getTranslation, type Language } from '../lib/i18n';
 
 type ScreensaverMode = 'static' | 'fade' | 'dvd';
 
+type LyricsBgMode = 'theme' | 'fixed' | 'cover';
+
 interface CanvasParams {
   mode: ScreensaverMode;
   fadeInterval: number;
@@ -16,6 +18,9 @@ interface CanvasParams {
   logLimit: number;
   maxDebugLogs: number;
   t: ReturnType<typeof getTranslation>;
+  showLyrics: boolean;
+  lyricsBgMode: LyricsBgMode;
+  lyricsBgColor: string | null;
 }
 
 export const useCanvasParams = (): CanvasParams => {
@@ -37,6 +42,11 @@ export const useCanvasParams = (): CanvasParams => {
   const videoTimeout = parseInt(searchParams.get('timeout') || '1000');
   const trackId = searchParams.get('trackid');
 
+  // Lyrics params
+  const showLyrics = searchParams.get('lyrics') === 'true';
+  const lyricsBgMode = (searchParams.get('bgMode') as LyricsBgMode) || 'theme';
+  const lyricsBgColor = searchParams.get('bgColor') || null;
+
   const t = getTranslation(language);
 
   return {
@@ -51,6 +61,9 @@ export const useCanvasParams = (): CanvasParams => {
     trackId,
     logLimit,
     maxDebugLogs: MAX_DEBUG_LOGS,
-    t
+    t,
+    showLyrics,
+    lyricsBgMode,
+    lyricsBgColor
   };
 }; 
