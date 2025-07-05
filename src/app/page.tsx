@@ -16,7 +16,7 @@ export default function Home() {
   const [searchMode, setSearchMode] = useState<'auto' | 'specific'>('auto');
   const [trackId, setTrackId] = useState('');
   const [showTrackInfo, setShowTrackInfo] = useState(true);
-  const [language, setLanguage] = useState<Language>('pt');
+  const [language, setLanguage] = useState<Language>('en');
   const router = useRouter();
 
   const t = getTranslation(language);

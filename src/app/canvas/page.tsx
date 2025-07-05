@@ -57,7 +57,7 @@ export default function CanvasPage() {
   const autoUpdate = searchParams.get('auto') !== 'false';
   const pollingInterval = parseInt(searchParams.get('poll') || '5000');
   const showTrackInfo = searchParams.get('info') !== 'false';
-  const language = (searchParams.get('lang') as Language) || 'pt';
+  const language = (searchParams.get('lang') as Language) || 'en';
 
   const t = getTranslation(language);
 
