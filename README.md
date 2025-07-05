@@ -44,6 +44,44 @@ npm run dev
 4. Access `http://localhost:3000` in your browser
 5. Click "Start Canvas" to begin the screensaver
 
+## 🎛️ Advanced Configuration
+
+### Query Parameters
+
+You can customize the screensaver behavior using URL query parameters:
+
+#### Basic Parameters
+- `mode`: Screensaver mode (`static`, `fade`, `dvd`) - Default: `static`
+- `fade`: Fade interval in milliseconds - Default: `3000`
+- `auto`: Auto update (`true`, `false`) - Default: `true`
+- `poll`: Polling interval in milliseconds - Default: `5000`
+- `info`: Show track info on Canvas bottom (`true`, `false`) - Default: `true`
+- `lang`: Language (`en`, `pt`) - Default: `en`
+
+#### Debug Parameters
+- `debug`: Enable debug mode (`true`, `false`) - Default: `false`
+- `log_limit`: Maximum number of debug logs to keep (10-200) - Default: `50`
+- `timeout`: Video loading timeout in milliseconds before fallback - Default: `1000`
+
+#### Track Selection
+- `trackid`: Specific Spotify track ID to display (disables auto-update)
+
+### Examples
+
+```bash
+# Debug mode with extended timeout
+http://localhost:3000/canvas?debug=true&timeout=3000&log_limit=100
+
+# DVD screensaver mode
+http://localhost:3000/canvas?mode=dvd&fade=2000
+
+# Specific track with no auto-update
+http://localhost:3000/canvas?trackid=4iV5W9uYEdYUVa79Axb7Rh&auto=false
+
+# Portuguese language with fade mode
+http://localhost:3000/canvas?lang=pt&mode=fade&info=false
+```
+
 ## 🎯 Features
 
 - ✅ Automatic TOTP authentication
@@ -53,6 +91,9 @@ npm run dev
 - ✅ Music information overlay
 - ✅ ESC key control to exit
 - ✅ Responsive and modern interface
+- ✅ Debug mode with detailed logging
+- ✅ Configurable video timeout and fallback
+- ✅ Multiple screensaver modes (static, fade, DVD)
 
 ## 🔧 Technologies
 
@@ -99,6 +140,17 @@ SpotSaver uses a robust TOTP (Time-based One-Time Password) authentication imple
 ### Network error
 - Check your internet connection
 - Make sure Spotify Web Player is accessible
+
+### Video compatibility issues
+- Some Canvas videos returned by Spotify's CDN contain `movflags` parameters that are not compatible with older browsers
+- If videos fail to load, the system will automatically fallback to album cover display
+- You can adjust the `timeout` parameter to control how long to wait before fallback
+- Use `debug=true` to see detailed information about video loading attempts
+
+### Debug mode
+- Enable debug mode with `?debug=true` to see detailed logs
+- Use `log_limit` parameter to control the number of logs kept in memory
+- Debug panel shows video loading status, errors, and fallback reasons
 
 ## 📄 License
 
