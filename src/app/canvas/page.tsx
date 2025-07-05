@@ -17,9 +17,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { getTranslation, type Language } from '../../lib/i18n';
+import { useRouter } from 'next/navigation';
 import { useDebugLogs } from '../../hooks/useDebugLogs';
+import { useVideoPlayer } from '../../hooks/useVideoPlayer';
+import { useCanvasParams } from '../../hooks/useCanvasParams';
 import { DebugPanel } from '../../components/DebugPanel';
 
 interface Track {
@@ -48,8 +49,6 @@ interface CanvasData {
   }>;
 }
 
-type ScreensaverMode = 'static' | 'fade' | 'dvd';
-
 export default function CanvasPage() {
   const [track, setTrack] = useState<Track | null>(null);
   const [canvasData, setCanvasData] = useState<CanvasData | null>(null);
@@ -64,42 +63,46 @@ export default function CanvasPage() {
   const [videoFailed, setVideoFailed] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  const videoRef = useRef<HTMLVideoElement>(null);
   const fallbackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Debug settings
-  const defaultLogLimit = 50;
-  const logLimit = parseInt(searchParams.get('log_limit') || defaultLogLimit.toString());
-  const MAX_DEBUG_LOGS = Math.max(10, Math.min(200, logLimit)); // Limit between 10 and 200 logs
-  
-  // Get screensaver mode from URL
-  const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
-  const fadeInterval = parseInt(searchParams.get('fade') || '3000');
-  const autoUpdate = searchParams.get('auto') !== 'false';
-  const pollingInterval = parseInt(searchParams.get('poll') || '5000');
-  const showTrackInfo = searchParams.get('info') !== 'false';
-  const language = (searchParams.get('lang') as Language) || 'en';
-  const debugMode = searchParams.get('debug') === 'true';
-  const videoTimeout = parseInt(searchParams.get('timeout') || '1000');
-
-  const t = getTranslation(language);
+  // Get all parameters from custom hook
+  const {
+    mode,
+    fadeInterval,
+    autoUpdate,
+    pollingInterval,
+    showTrackInfo,
+    language,
+    debugMode,
+    videoTimeout,
+    trackId,
+    maxDebugLogs,
+    t
+  } = useCanvasParams();
 
   // Debug logging hook
   const { debugLogs, addDebugLog, clearLogs } = useDebugLogs({
     debugMode,
-    maxLogs: MAX_DEBUG_LOGS
+    maxLogs: maxDebugLogs
+  });
+
+  // Video player hook
+  const { videoRef, tryPlayVideo, handleVideoFailure } = useVideoPlayer({
+    debugMode,
+    videoTimeout,
+    addDebugLog,
+    onVideoFailure: () => setVideoFailed(true)
   });
 
   // Initial debug log if active
   useEffect(() => {
     if (debugMode) {
-      addDebugLog('CONFIG', `Debug enabled - Log limit: ${MAX_DEBUG_LOGS}`);
+      addDebugLog('CONFIG', `Debug enabled - Log limit: ${maxDebugLogs}`);
       addDebugLog('CONFIG', `Video timeout: ${videoTimeout}ms`);
     }
-  }, [debugMode, MAX_DEBUG_LOGS, videoTimeout, addDebugLog]);
+  }, [debugMode, maxDebugLogs, videoTimeout, addDebugLog]);
 
   // Atualizar relógio a cada segundo
   useEffect(() => {
@@ -184,100 +187,6 @@ export default function CanvasPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Function to try to play the video
-  const tryPlayVideo = () => {
-    if (videoRef.current) {
-      const video = videoRef.current;
-      
-      // Check if video is still in DOM
-      if (!document.contains(video)) {
-        console.log('⚠️ Video removed from DOM - aborting playback');
-        if (debugMode) {
-          addDebugLog('WARNING', 'Video removed from DOM - aborting playback');
-        }
-        return;
-      }
-      
-      // Reset video state
-      video.currentTime = 0;
-      video.load();
-      
-      // Timer to check if the video started (customizable via timeout query param)
-      const timeoutId = setTimeout(() => {
-        // Check again if video is still in DOM
-        if (!document.contains(video)) {
-          console.log('⚠️ Video removed from DOM during timeout');
-          if (debugMode) {
-            addDebugLog('WARNING', 'Video removed from DOM during timeout');
-          }
-          return;
-        }
-        
-        if (video.readyState < 2 || video.paused) { // HAVE_CURRENT_DATA or video paused
-          console.log(`⏰ Video didn't start after ${videoTimeout}ms - readyState: ${video.readyState}, paused: ${video.paused}`);
-          if (debugMode) {
-            addDebugLog('TIMEOUT', `Video didn't start after ${videoTimeout}ms - readyState: ${video.readyState}, paused: ${video.paused}`);
-          }
-          setVideoFailed(true);
-        }
-      }, videoTimeout);
-      
-      // Clear timeout if the video starts playing
-      const handleCanPlay = () => {
-        clearTimeout(timeoutId);
-        video.removeEventListener('canplay', handleCanPlay);
-      };
-      
-      video.addEventListener('canplay', handleCanPlay);
-      
-      // Try to play
-      const playPromise = video.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Check if video is still in DOM
-            if (!document.contains(video)) {
-              console.log('⚠️ Video removed from DOM after starting playback');
-              if (debugMode) {
-                addDebugLog('WARNING', 'Video removed from DOM after starting playback');
-              }
-              return;
-            }
-            console.log('✅ Video playing successfully');
-            if (debugMode) {
-              addDebugLog('SUCCESS', 'Video playing successfully');
-            }
-            setVideoFailed(false);
-          })
-          .catch((error) => {
-            // Check if error is due to DOM removal
-            if (error.message && error.message.includes('removed from the document')) {
-              console.log('⚠️ Video removed from DOM during playback - ignoring error');
-              if (debugMode) {
-                addDebugLog('WARNING', 'Video removed from DOM during playback - ignoring error');
-              }
-              return;
-            }
-            console.error('❌ Failed to play video:', error);
-            if (debugMode) {
-              addDebugLog('ERROR', `Failed to play video: ${error.message || error}`);
-            }
-            handleVideoFailure();
-          });
-      }
-    }
-  };
-
-  // Function to handle video failure
-  const handleVideoFailure = () => {
-    console.log('❌ Video failure detected - going to fallback');
-    if (debugMode) {
-      addDebugLog('FAILURE', 'Video failure detected - going to fallback');
-    }
-      setVideoFailed(true);
   };
 
   // Event listeners for video
@@ -381,8 +290,6 @@ export default function CanvasPage() {
 
   // Polling to check for track changes
   useEffect(() => {
-    const trackId = searchParams.get('trackid');
-    
     // Only do polling if autoUpdate is enabled AND it's not a specific track
     if (autoUpdate && !trackId) {
       console.log(`🔄 Starting automatic polling for current track (every ${pollingInterval/1000}s)`);
@@ -400,11 +307,10 @@ export default function CanvasPage() {
     } else if (trackId) {
       console.log('🎯 Specific track detected - polling disabled');
     }
-  }, [autoUpdate, searchParams, lastTrackUri]);
+  }, [autoUpdate, trackId, pollingInterval, lastTrackUri]);
 
   useEffect(() => {
     const fetchInitialCanvas = async () => {
-      const trackId = searchParams.get('trackid');
       if (trackId) {
         await fetchCanvas(trackId);
       } else {
@@ -413,7 +319,7 @@ export default function CanvasPage() {
     };
 
     fetchInitialCanvas();
-  }, []);
+  }, [trackId]);
 
   useEffect(() => {
     if (canvasData && canvasData.canvasesList.length > 1) {
@@ -672,7 +578,7 @@ export default function CanvasPage() {
         {debugMode && (
           <DebugPanel 
             debugLogs={debugLogs}
-            maxLogs={MAX_DEBUG_LOGS}
+            maxLogs={maxDebugLogs}
             onClearLogs={clearLogs}
           />
         )}
@@ -761,7 +667,7 @@ export default function CanvasPage() {
       {debugMode && (
         <DebugPanel 
           debugLogs={debugLogs}
-          maxLogs={MAX_DEBUG_LOGS}
+          maxLogs={maxDebugLogs}
           onClearLogs={clearLogs}
         />
       )}
