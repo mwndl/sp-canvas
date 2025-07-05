@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getTranslation, type Language } from '../../lib/i18n';
 
 interface Track {
   id: string;
@@ -51,11 +52,14 @@ export default function CanvasPage() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Pegar modo do screensaver da URL (usando siglas)
-  const mode = (searchParams.get('mode') as ScreensaverMode) || 'static'; // manter mode
-  const fadeInterval = parseInt(searchParams.get('fade') || '3000'); // fade
-  const autoUpdate = searchParams.get('auto') !== 'false'; // auto
-  const pollingInterval = parseInt(searchParams.get('poll') || '5000'); // poll
-  const showTrackInfo = searchParams.get('info') !== 'false'; // info
+  const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
+  const fadeInterval = parseInt(searchParams.get('fade') || '3000');
+  const autoUpdate = searchParams.get('auto') !== 'false';
+  const pollingInterval = parseInt(searchParams.get('poll') || '5000');
+  const showTrackInfo = searchParams.get('info') !== 'false';
+  const language = (searchParams.get('lang') as Language) || 'pt';
+
+  const t = getTranslation(language);
 
   // Atualizar relógio a cada segundo
   useEffect(() => {
@@ -236,7 +240,7 @@ export default function CanvasPage() {
 
   // Polling para verificar mudanças na música
   useEffect(() => {
-    const trackUri = searchParams.get('track'); // track ao invés de trackUri
+    const trackUri = searchParams.get('track');
     
     // Só fazer polling se autoUpdate estiver ativado E não for uma faixa específica
     if (autoUpdate && !trackUri) {
@@ -259,7 +263,7 @@ export default function CanvasPage() {
 
   useEffect(() => {
     const fetchInitialCanvas = async () => {
-      const trackUri = searchParams.get('track'); // track ao invés de trackUri
+      const trackUri = searchParams.get('track');
       if (trackUri) {
         // Extrair o ID da música do URI completo
         const trackId = trackUri.replace('spotify:track:', '');
@@ -359,7 +363,9 @@ export default function CanvasPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Carregando Canvas...</div>
+        <div className="text-white text-xl">
+          {language === 'pt' ? 'Carregando Canvas...' : 'Loading Canvas...'}
+        </div>
       </div>
     );
   }
@@ -368,13 +374,15 @@ export default function CanvasPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-center">
-          <div className="text-xl mb-4">Erro ao carregar Canvas</div>
+          <div className="text-xl mb-4">
+            {language === 'pt' ? 'Erro ao carregar Canvas' : 'Error loading Canvas'}
+          </div>
           <div className="text-gray-400 mb-4">{error}</div>
           <button
             onClick={() => router.push('/')}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
           >
-            Voltar
+            {language === 'pt' ? 'Voltar' : 'Back'}
           </button>
         </div>
       </div>
@@ -411,7 +419,10 @@ export default function CanvasPage() {
                 <p className="text-gray-400 text-sm">{track.album.name}</p>
                 {videoFailed && (
                   <p className="text-yellow-400 text-xs mt-2">
-                    Canvas não disponível - mostrando capa do álbum
+                    {language === 'pt' 
+                      ? 'Canvas não disponível - mostrando capa do álbum'
+                      : 'Canvas not available - showing album cover'
+                    }
                   </p>
                 )}
               </div>
@@ -434,7 +445,7 @@ export default function CanvasPage() {
               {/* Relógio simples */}
               <div className="text-center">
                 <div className="text-8xl font-bold font-mono">
-                  {currentTime.toLocaleTimeString('pt-BR', { 
+                  {currentTime.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit',
                     hour12: false 
@@ -444,7 +455,7 @@ export default function CanvasPage() {
               {/* Data */}
               <div>
                 <h2 className="text-2xl font-bold mb-2">
-                  {currentTime.toLocaleDateString('pt-BR', { 
+                  {currentTime.toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US', { 
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -452,7 +463,7 @@ export default function CanvasPage() {
                   })}
                 </h2>
                 <p className="text-gray-400 text-sm">
-                  No track currently playing
+                  {language === 'pt' ? 'Nenhuma música tocando' : 'No track currently playing'}
                 </p>
               </div>
             </div>

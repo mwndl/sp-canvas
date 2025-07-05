@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getTranslation, formatTranslation, type Language } from '../lib/i18n';
 
 type ScreensaverMode = 'static' | 'fade' | 'dvd';
 
@@ -14,8 +15,11 @@ export default function Home() {
   const [pollingInterval, setPollingInterval] = useState(5); // em segundos
   const [searchMode, setSearchMode] = useState<'auto' | 'specific'>('auto');
   const [trackId, setTrackId] = useState('');
-  const [showTrackInfo, setShowTrackInfo] = useState(true); // Nova opção
+  const [showTrackInfo, setShowTrackInfo] = useState(true);
+  const [language, setLanguage] = useState<Language>('pt');
   const router = useRouter();
+
+  const t = getTranslation(language);
 
   const startScreensaver = async () => {
     setIsLoading(true);
@@ -34,26 +38,29 @@ export default function Home() {
       
       // Adicionar parâmetros de configuração com siglas
       if (mode !== 'static') {
-        canvasUrl.searchParams.set('mode', mode); // manter mode
+        canvasUrl.searchParams.set('mode', mode);
         if (mode === 'fade') {
-          canvasUrl.searchParams.set('fade', (fadeInterval * 1000).toString()); // fadeInterval -> fade
+          canvasUrl.searchParams.set('fade', (fadeInterval * 1000).toString());
         }
       }
       if (!autoUpdate) {
-        canvasUrl.searchParams.set('auto', 'false'); // autoUpdate -> auto
+        canvasUrl.searchParams.set('auto', 'false');
       }
       if (autoUpdate) {
-        canvasUrl.searchParams.set('poll', (pollingInterval * 1000).toString()); // pollingInterval -> poll
+        canvasUrl.searchParams.set('poll', (pollingInterval * 1000).toString());
       }
       
       // Adicionar configuração de exibir informações da faixa
       if (!showTrackInfo) {
-        canvasUrl.searchParams.set('info', 'false'); // showTrackInfo -> info
+        canvasUrl.searchParams.set('info', 'false');
       }
+      
+      // Adicionar idioma
+      canvasUrl.searchParams.set('lang', language);
       
       // Adicionar Track ID se for modo específico
       if (searchMode === 'specific' && trackId.trim()) {
-        canvasUrl.searchParams.set('track', `spotify:track:${trackId.trim()}`); // trackUri -> track
+        canvasUrl.searchParams.set('track', `spotify:track:${trackId.trim()}`);
       }
 
       router.push(canvasUrl.toString());
@@ -68,9 +75,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-gray-700">
+        {/* Language Selector */}
+        <div className="absolute top-4 right-4">
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as Language)}
+            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="pt">🇧🇷 Português</option>
+            <option value="en">🇺🇸 English</option>
+          </select>
+        </div>
+
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">SpCanvas</h1>
-          <p className="text-gray-300 text-lg">Spotify Canvas Screensaver</p>
+          <h1 className="text-4xl font-bold text-white mb-2">{t.title}</h1>
+          <p className="text-gray-300 text-lg">{t.subtitle}</p>
         </div>
 
         <div className="space-y-6">
@@ -78,13 +97,13 @@ export default function Home() {
           <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
             <h3 className="font-semibold text-white mb-4 flex items-center">
               <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-              Busca de Música
+              {t.musicSearch}
             </h3>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Modo de Busca
+                  {t.searchMode}
                 </label>
                 <div className="space-y-2">
                   <label className="flex items-center">
@@ -96,7 +115,7 @@ export default function Home() {
                       onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
                       className="mr-2 accent-blue-400"
                     />
-                    <span className="text-sm text-gray-300">Detectar automaticamente</span>
+                    <span className="text-sm text-gray-300">{t.autoDetect}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -107,7 +126,7 @@ export default function Home() {
                       onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
                       className="mr-2 accent-blue-400"
                     />
-                    <span className="text-sm text-gray-300">Buscar faixa específica</span>
+                    <span className="text-sm text-gray-300">{t.specificTrack}</span>
                   </label>
                 </div>
               </div>
@@ -115,18 +134,18 @@ export default function Home() {
               {searchMode === 'specific' && (
                 <div>
                   <label htmlFor="trackId" className="block text-sm font-medium text-gray-300 mb-2">
-                    Track ID
+                    {t.trackId}
                   </label>
                   <input
                     type="text"
                     id="trackId"
                     value={trackId}
                     onChange={(e) => setTrackId(e.target.value)}
-                    placeholder="Ex: 4iV5W9uYEdYUVa79Axb7Rh"
+                    placeholder={t.trackIdPlaceholder}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    Encontre o Track ID na URL do Spotify: spotify.com/track/[ID]
+                    {t.trackIdHelp}
                   </p>
                 </div>
               )}
@@ -141,14 +160,14 @@ export default function Home() {
                       className="mr-2 accent-blue-400"
                     />
                     <span className="text-sm font-medium text-gray-300">
-                      Atualizar automaticamente
+                      {t.autoUpdate}
                     </span>
                   </label>
                   
                   {autoUpdate && (
                     <div className="mt-3">
                       <label htmlFor="pollingInterval" className="block text-sm font-medium text-gray-300 mb-2">
-                        Intervalo de Atualização (segundos)
+                        {t.updateInterval}
                       </label>
                       <input
                         type="number"
@@ -161,7 +180,10 @@ export default function Home() {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                       />
                       <p className="text-xs text-gray-400 mt-1">
-                        Verificar mudanças na música a cada {pollingInterval} segundo{pollingInterval !== 1 ? 's' : ''}
+                        {formatTranslation(t.updateIntervalHelp, {
+                          interval: pollingInterval,
+                          plural: pollingInterval !== 1 ? t.seconds : t.second
+                        })}
                       </p>
                     </div>
                   )}
@@ -174,7 +196,7 @@ export default function Home() {
           <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
             <h3 className="font-semibold text-white mb-4 flex items-center">
               <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-              Canvas
+              {t.canvas}
             </h3>
             
             <div className="space-y-4">
@@ -187,11 +209,11 @@ export default function Home() {
                     className="mr-2 accent-blue-400"
                   />
                   <span className="text-sm font-medium text-gray-300">
-                    Exibir informações da faixa
+                    {t.showTrackInfo}
                   </span>
                 </label>
                 <p className="text-xs text-gray-400 mt-1">
-                  Mostra título, artista e álbum sobrepostos no canvas
+                  {t.showTrackInfoHelp}
                 </p>
               </div>
             </div>
@@ -201,16 +223,16 @@ export default function Home() {
           <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
             <h3 className="font-semibold text-white mb-4 flex items-center">
               <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
-              Fallbacks
+              {t.fallbacks}
             </h3>
             <p className="text-xs text-gray-400 mb-4">
-              Configurações para quando não há canvas disponível (capa do álbum) ou música tocando (relógio)
+              {t.fallbacksDescription}
             </p>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Modo de Exibição
+                  {t.displayMode}
                 </label>
                 <div className="space-y-2">
                   <label className="flex items-center">
@@ -222,7 +244,7 @@ export default function Home() {
                       onChange={(e) => setMode(e.target.value as ScreensaverMode)}
                       className="mr-2 accent-blue-400"
                     />
-                    <span className="text-sm text-gray-300">Estático</span>
+                    <span className="text-sm text-gray-300">{t.static}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -233,7 +255,7 @@ export default function Home() {
                       onChange={(e) => setMode(e.target.value as ScreensaverMode)}
                       className="mr-2 accent-blue-400"
                     />
-                    <span className="text-sm text-gray-300">Fade In/Out</span>
+                    <span className="text-sm text-gray-300">{t.fadeInOut}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -244,7 +266,7 @@ export default function Home() {
                       onChange={(e) => setMode(e.target.value as ScreensaverMode)}
                       className="mr-2 accent-blue-400"
                     />
-                    <span className="text-sm text-gray-300">Movimento DVD</span>
+                    <span className="text-sm text-gray-300">{t.dvdMovement}</span>
                   </label>
                 </div>
               </div>
@@ -252,7 +274,7 @@ export default function Home() {
               {mode === 'fade' && (
                 <div>
                   <label htmlFor="fadeInterval" className="block text-sm font-medium text-gray-300 mb-2">
-                    Intervalo do Fade (segundos)
+                    {t.fadeInterval}
                   </label>
                   <input
                     type="number"
@@ -265,7 +287,10 @@ export default function Home() {
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    Fade in/out a cada {fadeInterval} segundo{fadeInterval !== 1 ? 's' : ''}
+                    {formatTranslation(t.fadeIntervalHelp, {
+                      interval: fadeInterval,
+                      plural: fadeInterval !== 1 ? t.seconds : t.second
+                    })}
                   </p>
                 </div>
               )}
@@ -280,10 +305,10 @@ export default function Home() {
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Iniciando...
+                {t.starting}
               </div>
             ) : (
-              searchMode === 'auto' ? 'Iniciar Screensaver' : 'Buscar e Iniciar'
+              searchMode === 'auto' ? t.startScreensaver : t.searchAndStart
             )}
           </button>
 
@@ -295,7 +320,7 @@ export default function Home() {
 
           <div className="text-center">
             <p className="text-xs text-gray-400">
-              Pressione ESC para sair do screensaver
+              {t.pressEscToExit}
             </p>
           </div>
         </div>
