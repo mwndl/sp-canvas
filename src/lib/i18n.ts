@@ -16,6 +16,13 @@ export interface Translations {
   canvas: string;
   showTrackInfo: string;
   showTrackInfoHelp: string;
+  lyrics: string;
+  showLyrics: string;
+  showLyricsHelp: string;
+  backgroundMode: string;
+  themeColor: string;
+  fixedColor: string;
+  albumCover: string;
   fallbacks: string;
   fallbacksDescription: string;
   displayMode: string;
@@ -49,6 +56,13 @@ const translations: Record<Language, Translations> = {
     canvas: 'Canvas',
     showTrackInfo: 'Exibir informações da faixa',
     showTrackInfoHelp: 'Mostra título, artista e álbum sobrepostos no canvas',
+    lyrics: 'Letra da Música',
+    showLyrics: 'Exibir letra da música',
+    showLyricsHelp: 'Mostra a letra sincronizada da música atual',
+    backgroundMode: 'Modo de Fundo',
+    themeColor: 'Cor tema (extraída da capa)',
+    fixedColor: 'Cor fixa',
+    albumCover: 'Capa do álbum',
     fallbacks: 'Fallbacks',
     fallbacksDescription: 'Configurações para quando não há canvas disponível (capa do álbum) ou música tocando (relógio)',
     displayMode: 'Modo de Exibição',
@@ -80,6 +94,13 @@ const translations: Record<Language, Translations> = {
     canvas: 'Canvas',
     showTrackInfo: 'Show track information',
     showTrackInfoHelp: 'Shows title, artist and album overlaid on canvas',
+    lyrics: 'Song Lyrics',
+    showLyrics: 'Show song lyrics',
+    showLyricsHelp: 'Shows synchronized lyrics of the current song',
+    backgroundMode: 'Background Mode',
+    themeColor: 'Theme color (extracted from cover)',
+    fixedColor: 'Fixed color',
+    albumCover: 'Album cover',
     fallbacks: 'Fallbacks',
     fallbacksDescription: 'Settings for when no canvas is available (album cover) or no music is playing (clock)',
     displayMode: 'Display Mode',

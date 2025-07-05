@@ -17,6 +17,9 @@ export default function Home() {
   const [searchMode, setSearchMode] = useState<'auto' | 'specific'>('auto');
   const [trackId, setTrackId] = useState('');
   const [showTrackInfo, setShowTrackInfo] = useState(true);
+  const [showLyrics, setShowLyrics] = useState(false);
+  const [backgroundMode, setBackgroundMode] = useState<'theme' | 'fixed' | 'cover'>('theme');
+  const [fixedColor, setFixedColor] = useState('#000000');
   const [language, setLanguage] = useState<Language>('en');
   const [showHowToUse, setShowHowToUse] = useState(false);
   const router = useRouter();
@@ -82,6 +85,15 @@ export default function Home() {
       // Adicionar configuração de exibir informações da faixa
       if (!showTrackInfo) {
         canvasUrl.searchParams.set('info', 'false');
+      }
+      
+      // Adicionar configuração de lyrics
+      if (showLyrics) {
+        canvasUrl.searchParams.set('lyrics', 'true');
+        canvasUrl.searchParams.set('bgMode', backgroundMode);
+        if (backgroundMode === 'fixed') {
+          canvasUrl.searchParams.set('bgColor', fixedColor);
+        }
       }
       
       // Adicionar idioma
@@ -246,6 +258,91 @@ export default function Home() {
                   {t.showTrackInfoHelp}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Seção: Lyrics */}
+          <div className="bg-gray-700 border border-gray-600 rounded-xl p-4">
+            <h3 className="font-semibold text-white mb-4 flex items-center">
+              <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
+              {t.lyrics}
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={showLyrics}
+                    onChange={(e) => setShowLyrics(e.target.checked)}
+                    className="mr-2 accent-blue-400"
+                  />
+                  <span className="text-sm font-medium text-gray-300">
+                    {t.showLyrics}
+                  </span>
+                </label>
+                <p className="text-xs text-gray-400 mt-1">
+                  {t.showLyricsHelp}
+                </p>
+              </div>
+
+              {showLyrics && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t.backgroundMode}
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="backgroundMode"
+                        value="theme"
+                        checked={backgroundMode === 'theme'}
+                        onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                        className="mr-2 accent-blue-400"
+                      />
+                      <span className="text-sm text-gray-300">{t.themeColor}</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="backgroundMode"
+                        value="fixed"
+                        checked={backgroundMode === 'fixed'}
+                        onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                        className="mr-2 accent-blue-400"
+                      />
+                      <span className="text-sm text-gray-300">{t.fixedColor}</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="backgroundMode"
+                        value="cover"
+                        checked={backgroundMode === 'cover'}
+                        onChange={(e) => setBackgroundMode(e.target.value as 'theme' | 'fixed' | 'cover')}
+                        className="mr-2 accent-blue-400"
+                      />
+                      <span className="text-sm text-gray-300">{t.albumCover}</span>
+                    </label>
+                  </div>
+
+                  {backgroundMode === 'fixed' && (
+                    <div className="mt-3">
+                      <label htmlFor="fixedColor" className="block text-sm font-medium text-gray-300 mb-2">
+                        {t.fixedColor}
+                      </label>
+                      <input
+                        type="color"
+                        id="fixedColor"
+                        value={fixedColor}
+                        onChange={(e) => setFixedColor(e.target.value)}
+                        className="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
