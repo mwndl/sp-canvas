@@ -44,6 +44,7 @@ export default function CanvasPage() {
   const [lastTrackUri, setLastTrackUri] = useState<string | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +54,15 @@ export default function CanvasPage() {
   const mode = (searchParams.get('mode') as ScreensaverMode) || 'static';
   const fadeInterval = parseInt(searchParams.get('fadeInterval') || '3000');
   const autoUpdate = searchParams.get('autoUpdate') !== 'false'; // true por padrão
+
+  // Atualizar relógio a cada segundo
+  useEffect(() => {
+    const clockInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(clockInterval);
+  }, []);
 
   const fetchCanvas = async (specificTrackId?: string) => {
     try {
@@ -65,6 +75,17 @@ export default function CanvasPage() {
       
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Se não há música tocando, não é um erro - é um caso normal
+        if (errorData.error === 'No track currently playing') {
+          setTrack(null);
+          setCanvasData(null);
+          setLastTrackUri(null);
+          setError(null);
+          console.log('⏰ Nenhuma música tocando - mostrando relógio');
+          return;
+        }
+        
         throw new Error(errorData.error || 'Failed to fetch canvas');
       }
 
@@ -79,6 +100,7 @@ export default function CanvasPage() {
         setCurrentCanvasIndex(0); // Reset canvas index
         setVideoFailed(false); // Reset video failure state
         setRetryCount(0); // Reset retry count
+        setError(null); // Limpar qualquer erro anterior
         console.log('🎵 Nova música detectada:', data.track?.name || 'Track ID');
       }
     } catch (err) {
@@ -238,7 +260,7 @@ export default function CanvasPage() {
 
   // Efeito para modo fade in/out com movimento
   useEffect(() => {
-    if (mode === 'fade' && !canvasData?.canvasesList.length) {
+    if (mode === 'fade' && (!canvasData?.canvasesList.length || !track)) {
       const interval = setInterval(() => {
         setFadeOpacity(prev => {
           if (prev === 1) {
@@ -259,11 +281,11 @@ export default function CanvasPage() {
 
       return () => clearInterval(interval);
     }
-  }, [mode, canvasData, fadeInterval]);
+  }, [mode, canvasData, fadeInterval, track]);
 
   // Efeito para modo DVD
   useEffect(() => {
-    if (mode === 'dvd' && !canvasData?.canvasesList.length) {
+    if (mode === 'dvd' && (!canvasData?.canvasesList.length || !track)) {
       const interval = setInterval(() => {
         setDvdPosition(prev => {
           let newX = prev.x + dvdVelocity.x;
@@ -295,7 +317,7 @@ export default function CanvasPage() {
 
       return () => clearInterval(interval);
     }
-  }, [mode, canvasData, dvdVelocity]);
+  }, [mode, canvasData, dvdVelocity, track]);
 
   const handleKeyPress = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -333,8 +355,8 @@ export default function CanvasPage() {
     );
   }
 
-  // Mostrar capa do álbum se não há canvas OU se o vídeo falhou
-  if (!canvasData || !canvasData.canvasesList.length || videoFailed) {
+  // Mostrar capa do álbum se não há canvas OU se o vídeo falhou OU se não há música
+  if (!canvasData || !canvasData.canvasesList.length || videoFailed || !track) {
     return (
       <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center">
         {track && track.album.images[0] ? (
@@ -370,11 +392,42 @@ export default function CanvasPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-white text-center">
-              <div className="text-xl mb-4">Nenhum Canvas disponível</div>
-              <div className="text-gray-400 mb-4">
-                Esta música não possui Canvas. Tente outra música ou verifique se o Track ID está correto.
+          // Relógio quando não há música
+          <div 
+            className={`text-white text-center transition-opacity duration-1000 transition-all duration-500 ${
+              (mode === 'fade' || mode === 'dvd') ? 'absolute' : 'relative flex items-center justify-center'
+            }`}
+            style={{
+              opacity: mode === 'fade' ? fadeOpacity : 1,
+              left: mode === 'fade' ? `${fadePosition.x}%` : (mode === 'dvd' ? `${dvdPosition.x}%` : 'auto'),
+              top: mode === 'fade' ? `${fadePosition.y}%` : (mode === 'dvd' ? `${dvdPosition.y}%` : 'auto'),
+              transform: (mode === 'fade' || mode === 'dvd') ? 'translate(-50%, -50%)' : 'none'
+            }}
+          >
+            <div className="space-y-4">
+              {/* Relógio simples */}
+              <div className="text-center">
+                <div className="text-8xl font-bold font-mono">
+                  {currentTime.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                  })}
+                </div>
+              </div>
+              {/* Data */}
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  {currentTime.toLocaleDateString('pt-BR', { 
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  No track currently playing
+                </p>
               </div>
             </div>
           </div>
