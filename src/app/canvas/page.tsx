@@ -597,10 +597,9 @@ export default function CanvasPage() {
               const isNext = idx === currentLyricIndex + 1;
               const isPrevious = idx === currentLyricIndex - 1;
               
-              // Estado de aguardando primeira linha - mostrar "..." no lugar da linha atual
+              // Estado de aguardando primeira linha - mostrar "..." animado no lugar da linha atual
               if (currentLyricIndex === -1 && idx === 0) {
                 const progress = getWaitingProgress();
-                const dots = Math.floor(progress * 3) + 1;
                 
                 return (
                   <div
@@ -623,12 +622,27 @@ export default function CanvasPage() {
                       })
                     }}
                   >
-                    {'.'.repeat(dots)}
+                    <div className="flex items-center justify-center space-x-2">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className={`w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full transition-all duration-700 ease-out transform
+                            ${progress >= (i + 1) * 0.25 
+                              ? 'bg-white scale-100 opacity-100' 
+                              : 'bg-white/30 scale-75 opacity-50'
+                            }
+                          `}
+                          style={{
+                            animationDelay: `${i * 200}ms`,
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 );
               }
               
-              // Linha normal
+              // Linha normal ou instrumental animado
               return (
                 <div
                   key={idx}
@@ -652,7 +666,48 @@ export default function CanvasPage() {
                     })
                   }}
                 >
-                  {line.words}
+                  {line.words.trim() === '♪' ? (
+                    isActive ? (
+                      // Animação para instrumental ativo
+                      (() => {
+                        const currentTimeMs = playerProgress?.progress || 0;
+                        const startTime = parseInt(line.startTimeMs);
+                        const nextLine = lyrics.lines[idx + 1];
+                        const endTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000; // 10s se não houver próxima linha
+                        const duration = endTime - startTime;
+                        const elapsed = currentTimeMs - startTime;
+                        const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+                        
+                        if (debugMode) {
+                          addDebugLog('INSTRUMENTAL', `Progress: ${progress.toFixed(2)}`);
+                        }
+                        
+                        return (
+                          <div className="flex items-center justify-center space-x-2">
+                            {[0, 1, 2].map((i) => (
+                              <div
+                                key={i}
+                                className={`w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full transition-all duration-700 ease-out transform
+                                  ${progress >= (i + 1) * 0.25 
+                                    ? 'bg-white scale-100 opacity-100' 
+                                    : 'bg-white/30 scale-75 opacity-50'
+                                  }
+                                `}
+                                style={{
+                                  animationDelay: `${i * 200}ms`,
+                                }}
+                              />
+                            ))}
+                          </div>
+                        );
+                      })()
+                                          ) : (
+                        // Texto simples para instrumental não ativo
+                        '• • •'
+                      )
+                  ) : (
+                    line.words
+                  )}
                 </div>
               );
             })}
