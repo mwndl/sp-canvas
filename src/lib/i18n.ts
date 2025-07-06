@@ -37,6 +37,7 @@ export interface Translations {
   searchAndStart: string;
   starting: string;
   pressEscToExit: string;
+  howToUse: string;
   seconds: string;
   second: string;
 }
@@ -79,6 +80,7 @@ const translations: Record<Language, Translations> = {
     searchAndStart: 'Buscar e Iniciar',
     starting: 'Iniciando...',
     pressEscToExit: 'Pressione ESC para sair do screensaver',
+    howToUse: 'Como usar',
     seconds: 's',
     second: ''
   },
@@ -119,6 +121,7 @@ const translations: Record<Language, Translations> = {
     searchAndStart: 'Search and Start',
     starting: 'Starting...',
     pressEscToExit: 'Press ESC to exit screensaver',
+    howToUse: 'How to use',
     seconds: 's',
     second: ''
   }

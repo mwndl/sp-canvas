@@ -36,7 +36,17 @@ export async function GET(request: NextRequest) {
       throw new Error(`Failed to get player state: ${playerResponse.status}`);
     }
 
-    const playerData = await playerResponse.json();
+    // Check if response has content
+    const responseText = await playerResponse.text();
+    if (!responseText) {
+      return NextResponse.json({ 
+        isPlaying: false, 
+        progress: 0, 
+        trackId: null 
+      });
+    }
+
+    const playerData = JSON.parse(responseText);
 
     if (!playerData.item) {
       return NextResponse.json({ 

@@ -22,11 +22,11 @@ import { useDebugLogs } from '../../hooks/useDebugLogs';
 import { useVideoPlayer } from '../../hooks/useVideoPlayer';
 import { useCanvasParams } from '../../hooks/useCanvasParams';
 import { useKeyboardControls } from '../../hooks/useKeyboardControls';
-import { useScreensaverAnimation } from '../../hooks/useScreensaverAnimation';
+
 import { useCanvasFetch } from '../../hooks/useCanvasFetch';
 import { useClock } from '../../hooks/useClock';
-import { useCanvasRotation } from '../../hooks/useCanvasRotation';
 import { useLyricsFetch } from '../../hooks/useLyricsFetch';
+
 import { usePlayerProgress } from '../../hooks/usePlayerProgress';
 import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -42,21 +42,17 @@ export default function CanvasPage() {
   
   // Get all parameters from custom hook
   const {
-    trackUri,
-    language,
-    mode,
-    fadeInterval,
+    trackId,
+    autoUpdate,
+    pollingInterval,
+    showCanvas,
     showTrackInfo,
     showLyrics,
     lyricsMode,
-    backgroundMode,
-    fixedColor,
+    language,
     debugMode,
     videoTimeout,
     maxDebugLogs,
-    autoUpdate,
-    pollingInterval,
-    trackId,
     t
   } = useCanvasParams();
 
@@ -77,13 +73,13 @@ export default function CanvasPage() {
   // Keyboard controls hook
   useKeyboardControls();
 
-  // Player progress hook
+  // Player progress hook - only enabled when lyrics are shown
   const {
     playerProgress,
     isLoading: isPlayerLoading,
     error: playerError
   } = usePlayerProgress({
-    enabled: true, // Sempre habilitado para detectar mudanças de música
+    enabled: showLyrics, // Só habilitado quando letras estão ativas
     pollingInterval: 5000, // 5 segundos
     debugMode,
     addDebugLog
@@ -112,19 +108,11 @@ export default function CanvasPage() {
   // Clock hook
   const currentTime = useClock();
 
-  // Canvas rotation hook
-  const { currentCanvasIndex } = useCanvasRotation({
-    canvasData,
-    lastTrackUri
-  });
+  // Canvas rotation - simplified to always use first canvas
+  const currentCanvasIndex = 0;
 
-  // Screensaver animation hook
-  const { fadeOpacity, fadePosition, dvdPosition, fallbackRef } = useScreensaverAnimation({
-    mode,
-    fadeInterval,
-    hasCanvas: !!(canvasData?.canvasesList.length),
-    hasTrack: !!track
-  });
+  // Screensaver animation hook - not used in current implementation
+  const fallbackRef = useRef<HTMLDivElement>(null);
 
   // Lyrics fetch hook
   const {
@@ -389,17 +377,13 @@ export default function CanvasPage() {
     return <ErrorScreen error={error} onBack={() => router.push('/')} />;
   }
 
-  // Show album cover if no canvas OR if video failed OR if no track
-  if (!canvasData || !canvasData.canvasesList.length || videoFailed || !track) {
+  // Show album cover if canvas is disabled OR no canvas OR if video failed OR if no track
+  if (!showCanvas || !canvasData || !canvasData.canvasesList.length || videoFailed || !track) {
     return (
       <FallbackDisplay
         track={track}
         currentTime={currentTime}
         language={language}
-        mode={mode}
-        fadeOpacity={fadeOpacity}
-        fadePosition={fadePosition}
-        dvdPosition={dvdPosition}
         fallbackRef={fallbackRef}
         debugMode={debugMode}
         debugLogs={debugLogs}
@@ -408,8 +392,6 @@ export default function CanvasPage() {
         // Lyrics props
         showLyrics={showLyrics}
         lyrics={lyrics}
-        lyricsBgMode={backgroundMode}
-        lyricsBgColor={fixedColor}
         lyricsColors={lyricsColors}
         currentLyricIndex={currentLyricIndex}
         playerProgress={playerProgress ? {
@@ -425,6 +407,8 @@ export default function CanvasPage() {
   }
 
   const currentCanvas = canvasData.canvasesList[currentCanvasIndex];
+
+
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -465,7 +449,7 @@ export default function CanvasPage() {
       </video>
 
       {/* Overlay para letras (entre Canvas e letra) */}
-      {showLyrics && lyrics && backgroundMode !== 'cover' && (
+      {showLyrics && lyrics && (
         <div 
           className="absolute inset-0 z-10"
           style={{
@@ -506,7 +490,8 @@ export default function CanvasPage() {
       {/* Lyrics Overlay */}
       {showLyrics && lyrics && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none select-none"
+          className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none select-none"
+          style={{ zIndex: 40 }}
         >
           {/* Exibir linha ativa e vizinhas centralizadas */}
           <div 
@@ -563,7 +548,7 @@ export default function CanvasPage() {
               }
               
               // Determinar quantas linhas mostrar baseado no modo
-              const maxLines = lyricsMode === 'left' ? 3 : 2; // 3 linhas anteriores para left, 2 para 5lines
+              const maxLines = lyricsMode === 'left' ? 3 : 2;
               
               // Quando aguardando primeira linha, mostrar apenas a linha 0
               if (currentLyricIndex === -1) {
@@ -586,157 +571,59 @@ export default function CanvasPage() {
               // Estado de aguardando primeira linha - mostrar "..." no lugar da linha atual
               if (currentLyricIndex === -1 && idx === 0) {
                 const progress = getWaitingProgress();
-                
-                if (debugMode) {
-                  console.log('🎯 Showing dots, progress:', progress);
-                }
+                const dots = Math.floor(progress * 3) + 1;
                 
                 return (
                   <div
                     key={idx}
-                    className="transition-all duration-500 ease-out transform text-white font-bold text-3xl md:text-5xl lg:text-6xl scale-110 opacity-100 mb-8 md:mb-12 lg:mb-16"
+                    className={`text-4xl font-bold mb-4 ${
+                      lyricsMode === 'left' 
+                        ? 'text-left' 
+                        : 'text-center'
+                    }`}
                     style={{
-                      color: '#fff',
-                      textShadow: '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)',
-                      marginBottom: '4vh', // 4% da altura da viewport para linha ativa
-                      height: '8vh', // Altura fixa para linha ativa (preparada para 2 linhas)
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      color: '#ffffff',
+                      opacity: 0.7,
+                      textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                      position: 'relative',
+                      zIndex: 60,
+                      ...(lyricsMode === 'left' && {
+                        fontSize: '2rem',
+                        lineHeight: '2.5rem',
+                        marginBottom: '0.5rem'
+                      })
                     }}
                   >
-                    <span className="inline-block">
-                      <div className="flex items-center justify-center space-x-2">
-                        {[0, 1, 2].map((i) => (
-                          <div
-                            key={i}
-                            className={`w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full transition-all duration-700 ease-out transform
-                              ${progress >= (i + 1) * 0.25 
-                                ? 'bg-white scale-100 opacity-100' 
-                                : 'bg-white/30 scale-75 opacity-50'
-                              }
-                            `}
-                            style={{
-                              animationDelay: `${i * 200}ms`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </span>
+                    {'.'.repeat(dots)}
                   </div>
                 );
               }
               
+              // Linha normal
               return (
                 <div
                   key={idx}
-                  className={`${lyricsMode === 'left' 
-                    ? isActive 
-                      ? 'text-white font-bold text-2xl md:text-3xl lg:text-4xl opacity-100'
-                      : 'text-white font-normal text-2xl md:text-3xl lg:text-4xl opacity-50'
-                    : isActive 
-                      ? 'text-white font-bold text-3xl md:text-5xl lg:text-6xl scale-110 opacity-100 mb-8 md:mb-12 lg:mb-16'
-                      : isNext
-                      ? 'text-white font-medium text-2xl md:text-3xl lg:text-4xl scale-100 opacity-70 mb-4 md:mb-6 lg:mb-8'
-                      : isPrevious
-                      ? 'text-white font-normal text-xl md:text-2xl lg:text-3xl scale-95 opacity-40 mb-4 md:mb-6 lg:mb-8'
-                      : 'text-white font-normal text-lg md:text-xl lg:text-2xl scale-90 opacity-20 mb-2 md:mb-4 lg:mb-6'
+                  className={`text-4xl font-bold mb-4 ${
+                    lyricsMode === 'left' 
+                      ? 'text-left' 
+                      : 'text-center'
                   }`}
                   style={{
-                    color: '#fff',
-                    textShadow: isActive 
-                      ? '0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)'
-                      : '0 2px 4px rgba(0,0,0,0.6)',
-                    marginBottom: lyricsMode === 'left' 
-                      ? '1vh' // Espaçamento menor para modo left
-                      : isActive 
-                        ? '4vh' // 4% da altura da viewport para linha ativa
-                        : isNext || isPrevious
-                        ? '2vh' // 2% da altura da viewport para linhas próximas
-                        : '1vh', // 1% da altura da viewport para linhas distantes
-                    textAlign: lyricsMode === 'left' ? 'left' : 'center',
+                    color: '#ffffff',
+                    opacity: isActive ? 1 : (isNext || isPrevious ? 0.7 : 0.4),
+                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                    position: 'relative',
+                    zIndex: 60,
+                    fontSize: isActive ? '2.5rem' : (isNext || isPrevious ? '1.8rem' : '1.5rem'),
+                    fontWeight: isActive ? 'bold' : 'normal',
                     ...(lyricsMode === 'left' && {
-                      height: '6vh', // Altura fixa menor para modo left
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                      paddingLeft: '2rem'
-                    }),
-                    ...(isActive && lyricsMode !== 'left' && {
-                      height: '8vh', // Altura fixa para linha ativa (modo 5lines)
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      fontSize: isActive ? '2rem' : (isNext || isPrevious ? '1.5rem' : '1.2rem'),
+                      lineHeight: '2.5rem',
+                      marginBottom: '0.5rem'
                     })
                   }}
                 >
-                  <span className="inline-block">
-                    {line.words.trim() === '♪' ? (
-                      // Verificar se a distância entre linhas é superior a 15s antes de mostrar instrumental
-                      (() => {
-                        const currentTimeMs = playerProgress?.progress || 0;
-                        const startTime = parseInt(line.startTimeMs);
-                        
-                        // Encontrar a linha anterior (não instrumental)
-                        let previousLine = null;
-                        for (let i = idx - 1; i >= 0; i--) {
-                          if (lyrics.lines[i].words.trim() !== '♪') {
-                            previousLine = lyrics.lines[i];
-                            break;
-                          }
-                        }
-                        
-                        // Encontrar a próxima linha (não instrumental)
-                        let nextLine = null;
-                        for (let i = idx + 1; i < lyrics.lines.length; i++) {
-                          if (lyrics.lines[i].words.trim() !== '♪') {
-                            nextLine = lyrics.lines[i];
-                            break;
-                          }
-                        }
-                        
-                        // Calcular distância entre linhas
-                        const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : startTime;
-                        const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000;
-                        const timeDistance = nextTime - previousTime;
-                        
-                        // Mostrar instrumental apenas se a distância for superior a 15 segundos
-                        if (timeDistance < 15000) {
-                          return null; // Não mostrar nada para instrumentais curtos
-                        }
-                        
-                        const endTime = nextTime;
-                        const duration = endTime - startTime;
-                        const elapsed = currentTimeMs - startTime;
-                        const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-                        
-                        if (debugMode) {
-                          console.log('🎵 Instrumental progress:', progress, 'timeDistance:', timeDistance);
-                        }
-                        
-                        return (
-                          <div className="flex items-center justify-center space-x-2">
-                            {[0, 1, 2].map((i) => (
-                              <div
-                                key={i}
-                                className={`w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full transition-all duration-700 ease-out transform
-                                  ${progress >= (i + 1) * 0.25 
-                                    ? 'bg-white scale-100 opacity-100' 
-                                    : 'bg-white/30 scale-75 opacity-50'
-                                  }
-                                `}
-                                style={{
-                                  animationDelay: `${i * 200}ms`,
-                                }}
-                              />
-                            ))}
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      line.words
-                    )}
-                  </span>
+                  {line.words}
                 </div>
               );
             })}
