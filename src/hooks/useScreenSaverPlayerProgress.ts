@@ -5,6 +5,7 @@ interface PlayerProgress {
   progress: number; // em ms
   trackId: string | null;
   duration: number; // em ms
+  timestamp?: number; // timestamp do servidor
 }
 
 interface UseScreenSaverPlayerProgressOptions {
@@ -82,7 +83,9 @@ export const useScreenSaverPlayerProgress = ({
       setPlayerProgress(data);
       
       if (debugMode) {
-        addDebugLog('PLAYER', `Screen Saver - Progress: ${data.progress}ms, Playing: ${data.isPlaying}, Track: ${data.trackId}`);
+        const progressSeconds = Math.round(data.progress / 1000);
+        const cacheAge = data.timestamp ? Math.round((Date.now() - data.timestamp) / 1000) : 0;
+        addDebugLog('PLAYER', `Screen Saver - Progress: ${progressSeconds}s, Playing: ${data.isPlaying}, Track: ${data.trackId}, Cache Age: ${cacheAge}s`);
       }
     } catch (err) {
       console.error('Error fetching player progress (screen saver):', err);

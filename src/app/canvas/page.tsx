@@ -33,6 +33,7 @@ import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
 import { FallbackDisplay } from '../../components/FallbackDisplay';
 import { ScreenSaverDisplay } from '../../components/ScreenSaverDisplay';
+import CacheDebugPanel from '../../components/CacheDebugPanel';
 
 
 
@@ -718,6 +719,9 @@ export default function CanvasPage() {
           onClearLogs={clearLogs}
         />
       )}
+
+      {/* Cache Debug Panel */}
+      {debugMode && <CacheDebugPanel />}
 
     </div>
   );

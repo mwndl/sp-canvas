@@ -5,6 +5,7 @@ interface PlayerProgress {
   progress: number; // em ms
   trackId: string | null;
   duration: number; // em ms
+  timestamp?: number; // timestamp do servidor
 }
 
 interface UsePlayerProgressOptions {
@@ -78,7 +79,9 @@ export const usePlayerProgress = ({
       setPlayerProgress(data);
       
       if (debugMode) {
-        addDebugLog('PLAYER', `Progress: ${data.progress}ms, Playing: ${data.isPlaying}, Track: ${data.trackId}`);
+        const progressSeconds = Math.round(data.progress / 1000);
+        const cacheAge = data.timestamp ? Math.round((Date.now() - data.timestamp) / 1000) : 0;
+        addDebugLog('PLAYER', `Progress: ${progressSeconds}s, Playing: ${data.isPlaying}, Track: ${data.trackId}, Cache Age: ${cacheAge}s`);
       }
     } catch (err) {
       console.error('Error fetching player progress:', err);
@@ -98,13 +101,27 @@ export const usePlayerProgress = ({
     }
 
     const now = Date.now();
-    const timeSinceUpdate = now - lastUpdateRef.current;
-    const estimatedProgress = estimatedProgressRef.current.progress + timeSinceUpdate;
+    
+    // Se temos timestamp do servidor, usar ele para cálculo mais preciso
+    if (estimatedProgressRef.current.timestamp) {
+      const serverTimeDiff = now - estimatedProgressRef.current.timestamp;
+      const estimatedProgress = estimatedProgressRef.current.progress + serverTimeDiff;
+      
+      return {
+        ...estimatedProgressRef.current,
+        progress: estimatedProgress,
+        timestamp: now // Atualizar timestamp
+      };
+    } else {
+      // Fallback para o método anterior
+      const timeSinceUpdate = now - lastUpdateRef.current;
+      const estimatedProgress = estimatedProgressRef.current.progress + timeSinceUpdate;
 
-    return {
-      ...estimatedProgressRef.current,
-      progress: estimatedProgress
-    };
+      return {
+        ...estimatedProgressRef.current,
+        progress: estimatedProgress
+      };
+    }
   };
 
   // Atualizar progresso estimado a cada 100ms para sincronização suave
