@@ -4,10 +4,25 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getTranslation, formatTranslation, type Language } from '../lib/i18n';
 import HowToUseModal from '../components/HowToUseModal';
+import { ScreenSaverSettings, type ScreenSaverConfig } from '../components/ScreenSaverSettings';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Mode selection
+  const [mode, setMode] = useState<'standard' | 'screensaver'>('standard');
+  
+  // Screen Saver settings
+  const [screenSaverConfig, setScreenSaverConfig] = useState<ScreenSaverConfig>({
+    displayMode: 'album1',
+    clockMode: '24h',
+    timezone: 'UTC-3',
+    showDate: true,
+    showTrackInfo: true,
+    movement: 'fade',
+    fadeSpeed: 2
+  });
   
   // Music search settings
   const [searchMode, setSearchMode] = useState<'auto' | 'specific'>('auto');
@@ -62,6 +77,20 @@ export default function Home() {
 
       const canvasUrl = new URL('/canvas', window.location.origin);
       
+      // Mode
+      canvasUrl.searchParams.set('mode', mode);
+      
+      // Screen Saver settings
+      if (mode === 'screensaver') {
+        canvasUrl.searchParams.set('displayMode', screenSaverConfig.displayMode);
+        canvasUrl.searchParams.set('clockMode', screenSaverConfig.clockMode);
+        canvasUrl.searchParams.set('timezone', screenSaverConfig.timezone);
+        canvasUrl.searchParams.set('showDate', screenSaverConfig.showDate.toString());
+        canvasUrl.searchParams.set('showTrackInfo', screenSaverConfig.showTrackInfo.toString());
+        canvasUrl.searchParams.set('movement', screenSaverConfig.movement);
+        canvasUrl.searchParams.set('fadeSpeed', screenSaverConfig.fadeSpeed.toString());
+      }
+      
       // Canvas settings
       canvasUrl.searchParams.set('showCanvas', showCanvas.toString());
       canvasUrl.searchParams.set('info', showTrackInfo.toString());
@@ -89,6 +118,7 @@ export default function Home() {
         canvasUrl.searchParams.set('trackId', extractedTrackId);
       }
 
+      console.log('Starting screensaver with URL:', canvasUrl.toString());
       router.push(canvasUrl.toString());
     } catch (err) {
       console.error('Error starting screensaver:', err);
@@ -129,9 +159,37 @@ export default function Home() {
           <p className="text-gray-400 text-sm">{t.subtitle}</p>
         </div>
 
+        {/* Mode Selection */}
+        <div className="p-4 border-b border-gray-700">
+          <h3 className="text-white font-medium mb-3">Modo de Operação</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setMode('standard')}
+              className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'standard'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Padrão
+            </button>
+            <button
+              onClick={() => setMode('screensaver')}
+              className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'screensaver'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Screen Saver
+            </button>
+          </div>
+        </div>
+
         {/* Settings List */}
-        <div className="divide-y divide-gray-700">
-          {/* Show Canvas */}
+        {mode === 'standard' ? (
+          <div className="divide-y divide-gray-700">
+            {/* Show Canvas */}
           <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
             <div className="flex-1">
               <h3 className="text-white font-medium">Show Canvas</h3>
@@ -276,6 +334,12 @@ export default function Home() {
             </div>
           )}
         </div>
+        ) : (
+          <ScreenSaverSettings 
+            config={screenSaverConfig}
+            onConfigChange={setScreenSaverConfig}
+          />
+        )}
 
         {/* Error Display */}
         {error && (

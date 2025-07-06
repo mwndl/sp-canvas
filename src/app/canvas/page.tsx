@@ -32,6 +32,7 @@ import { DebugPanel } from '../../components/DebugPanel';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { ErrorScreen } from '../../components/ErrorScreen';
 import { FallbackDisplay } from '../../components/FallbackDisplay';
+import { ScreenSaverDisplay } from '../../components/ScreenSaverDisplay';
 
 
 
@@ -42,6 +43,7 @@ export default function CanvasPage() {
   
   // Get all parameters from custom hook
   const {
+    mode,
     trackId,
     autoUpdate,
     pollingInterval,
@@ -49,6 +51,13 @@ export default function CanvasPage() {
     showTrackInfo,
     showLyrics,
     lyricsMode,
+    displayMode,
+    clockMode,
+    timezone,
+    showDate,
+    showTrackInfoInClock,
+    movement,
+    fadeSpeed,
     language,
     debugMode,
     videoTimeout,
@@ -105,8 +114,8 @@ export default function CanvasPage() {
     playerProgress // Passar o playerProgress para detectar mudanças
   });
 
-  // Clock hook
-  const currentTime = useClock();
+  // Clock hook - only used in standard mode
+  const currentTime = new Date();
 
   // Canvas rotation - simplified to always use first canvas
   const currentCanvasIndex = 0;
@@ -375,6 +384,24 @@ export default function CanvasPage() {
 
   if (error) {
     return <ErrorScreen error={error} onBack={() => router.push('/')} />;
+  }
+
+  // Screen Saver Mode
+  if (mode === 'screensaver') {
+    return (
+      <ScreenSaverDisplay
+        config={{
+          displayMode,
+          clockMode,
+          timezone,
+          showDate,
+          showTrackInfo: showTrackInfoInClock,
+          movement,
+          fadeSpeed
+        }}
+        track={track}
+      />
+    );
   }
 
   // Show album cover if canvas is disabled OR no canvas OR if video failed OR if no track

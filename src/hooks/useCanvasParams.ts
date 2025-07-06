@@ -2,6 +2,9 @@ import { useSearchParams } from 'next/navigation';
 import { getTranslation, type Language } from '../lib/i18n';
 
 interface CanvasParams {
+  // Mode
+  mode: 'standard' | 'screensaver';
+  
   // Music search settings
   trackId: string | null;
   autoUpdate: boolean;
@@ -12,6 +15,15 @@ interface CanvasParams {
   showTrackInfo: boolean;
   showLyrics: boolean;
   lyricsMode: '5lines' | 'left';
+  
+  // Screen Saver settings
+  displayMode: 'album1' | 'album2' | 'clock';
+  clockMode: '12h' | '24h';
+  timezone: string;
+  showDate: boolean;
+  showTrackInfoInClock: boolean;
+  movement: 'fade' | 'dvd';
+  fadeSpeed: number;
   
   // UI settings
   language: string;
@@ -28,6 +40,9 @@ interface CanvasParams {
 export const useCanvasParams = (): CanvasParams => {
   const searchParams = useSearchParams();
   
+  // Mode
+  const mode = (searchParams.get('mode') as 'standard' | 'screensaver') || 'standard';
+  
   // Music search settings
   const trackId = searchParams.get('trackId');
   const autoUpdate = searchParams.get('autoUpdate') !== 'false';
@@ -38,6 +53,15 @@ export const useCanvasParams = (): CanvasParams => {
   const showTrackInfo = searchParams.get('info') !== 'false';
   const showLyrics = searchParams.get('lyrics') === 'true';
   const lyricsMode = (searchParams.get('lyricsMode') as '5lines' | 'left') || '5lines';
+  
+  // Screen Saver settings
+  const displayMode = (searchParams.get('displayMode') as 'album1' | 'album2' | 'clock') || 'album1';
+  const clockMode = (searchParams.get('clockMode') as '12h' | '24h') || '24h';
+  const timezone = searchParams.get('timezone') || 'UTC-3';
+  const showDate = searchParams.get('showDate') !== 'false';
+  const showTrackInfoInClock = searchParams.get('showTrackInfo') !== 'false';
+  const movement = (searchParams.get('movement') as 'fade' | 'dvd') || 'fade';
+  const fadeSpeed = parseFloat(searchParams.get('fadeSpeed') || '2');
   
   // UI settings
   const language = (searchParams.get('lang') as Language) || 'en';
@@ -50,6 +74,7 @@ export const useCanvasParams = (): CanvasParams => {
   const t = getTranslation(language);
 
   return {
+    mode,
     trackId,
     autoUpdate,
     pollingInterval,
@@ -57,6 +82,13 @@ export const useCanvasParams = (): CanvasParams => {
     showTrackInfo,
     showLyrics,
     lyricsMode,
+    displayMode,
+    clockMode,
+    timezone,
+    showDate,
+    showTrackInfoInClock,
+    movement,
+    fadeSpeed,
     language,
     debugMode,
     videoTimeout,
