@@ -139,7 +139,7 @@ const useFadeAnimation = (fadeSpeed: number) => {
         // Agendar próximo fade
         timeoutRef.current = setTimeout(() => {
           animateFade();
-        }, fadeSpeed * 1000);
+        }, (fadeSpeed || 15) * 1000);
       }, 100);
     }, fadeSpeed * 1000);
   };
@@ -156,10 +156,10 @@ const useFadeAnimation = (fadeSpeed: number) => {
       setOpacity(1);
       setIsVisible(true);
       
-      // Iniciar o ciclo de fade após o tempo especificado
+      // Iniciar o ciclo de fade após o tempo especificado (padrão 15s)
       timeoutRef.current = setTimeout(() => {
         animateFade();
-      }, fadeSpeed * 1000);
+      }, (fadeSpeed || 15) * 1000);
     }, 1000);
   };
 

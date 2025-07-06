@@ -21,7 +21,7 @@ export default function Home() {
     showDate: true,
     showTrackInfo: true,
     movement: 'fade',
-    fadeSpeed: 2
+    fadeSpeed: 15
   });
   
   // Music search settings
