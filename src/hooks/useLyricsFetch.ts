@@ -147,6 +147,16 @@ export const useLyricsFetch = ({
 
       const data = await response.json();
       
+      // Verificar se as letras estão sincronizadas
+      if (data.lyrics && data.lyrics.syncType === 'UNSYNCED') {
+        if (debugMode) {
+          addDebugLog('LYRICS', 'Lyrics are unsynchronized - not displaying');
+        }
+        setLyrics(null);
+        setColors(null);
+        return;
+      }
+      
       // Limpar letras antes de definir
       const cleanedLyrics = data.lyrics ? cleanLyrics(data.lyrics) : null;
       
@@ -160,6 +170,7 @@ export const useLyricsFetch = ({
         
         addDebugLog('LYRICS', `Lyrics loaded: ${originalCount} lines, cleaned: ${cleanedCount} lines (removed ${removedCount} invalid lines)`);
         addDebugLog('LYRICS', `Provider: ${data.lyrics?.providerDisplayName || 'Unknown'}`);
+        addDebugLog('LYRICS', `Sync Type: ${data.lyrics?.syncType || 'Unknown'}`);
       }
     } catch (err) {
       console.error('Error fetching lyrics:', err);

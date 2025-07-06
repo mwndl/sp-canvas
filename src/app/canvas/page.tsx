@@ -139,6 +139,15 @@ export default function CanvasPage() {
     addDebugLog
   });
 
+  // Log quando letras são desabilitadas
+  useEffect(() => {
+    if (showLyrics && track && !lyrics && !isLyricsLoading && !lyricsError) {
+      if (debugMode) {
+        addDebugLog('LYRICS', 'Lyrics disabled - may be unsynchronized or unavailable');
+      }
+    }
+  }, [showLyrics, track, lyrics, isLyricsLoading, lyricsError, debugMode, addDebugLog]);
+
   // Lyrics sync state
   const [currentLyricIndex, setCurrentLyricIndex] = useState(-1); // -1 = aguardando primeira linha
   const [isLyricsTransitioning, setIsLyricsTransitioning] = useState(false); // Controla transição de letras
