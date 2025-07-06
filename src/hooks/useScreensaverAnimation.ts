@@ -125,6 +125,7 @@ const useFadeAnimation = (fadeSpeed: number) => {
     setOpacity(0);
     setIsVisible(false);
     
+    // Após 1 segundo, mover para nova posição e fade in
     timeoutRef.current = setTimeout(() => {
       // Mover para nova posição aleatória
       const newPosition = calculateRandomPosition();
@@ -132,16 +133,14 @@ const useFadeAnimation = (fadeSpeed: number) => {
       setOpacity(0);
       setIsVisible(true);
       
+      // Fade in imediatamente
+      setOpacity(1);
+      
+      // Agendar próximo fade após o tempo especificado
       timeoutRef.current = setTimeout(() => {
-        // Fade in
-        setOpacity(1);
-        
-        // Agendar próximo fade
-        timeoutRef.current = setTimeout(() => {
-          animateFade();
-        }, (fadeSpeed || 15) * 1000);
-      }, 100);
-    }, fadeSpeed * 1000);
+        animateFade();
+      }, (fadeSpeed || 15) * 1000);
+    }, 1000); // Sempre 1 segundo para o fade out/in
   };
 
   const startFadeAnimation = () => {
@@ -156,7 +155,7 @@ const useFadeAnimation = (fadeSpeed: number) => {
       setOpacity(1);
       setIsVisible(true);
       
-      // Iniciar o ciclo de fade após o tempo especificado (padrão 15s)
+      // Iniciar o ciclo de fade após o tempo especificado
       timeoutRef.current = setTimeout(() => {
         animateFade();
       }, (fadeSpeed || 15) * 1000);
@@ -267,7 +266,7 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
       style: {
         transform: `translate(${fadeAnimation.position.x}px, ${fadeAnimation.position.y}px)`,
         opacity: fadeAnimation.opacity,
-        transition: `opacity 0.3s ease-in-out, transform 0.05s ease-out`
+        transition: `opacity 0.5s ease-in-out, transform 0.1s ease-out`
       }
     };
   }
