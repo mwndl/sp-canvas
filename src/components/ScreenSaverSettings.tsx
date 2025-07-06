@@ -8,7 +8,7 @@ export interface ScreenSaverConfig {
   timezone: string;
   showDate: boolean;
   showTrackInfo: boolean;
-  movement: 'fade' | 'dvd';
+  movement: 'fade' | 'dvd' | 'static';
   fadeSpeed: number;
 }
 
@@ -173,9 +173,23 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
             <input
               type="radio"
               name="movement"
+              value="static"
+              checked={config.movement === 'static'}
+              onChange={(e) => updateConfig({ movement: e.target.value as 'fade' | 'dvd' | 'static' })}
+              className="mr-3 accent-blue-400"
+            />
+            <div>
+              <span className="text-gray-300 block">Estático</span>
+              <span className="text-gray-400 text-xs">Centralizado na tela sem movimento</span>
+            </div>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="movement"
               value="fade"
               checked={config.movement === 'fade'}
-              onChange={(e) => updateConfig({ movement: e.target.value as 'fade' | 'dvd' })}
+              onChange={(e) => updateConfig({ movement: e.target.value as 'fade' | 'dvd' | 'static' })}
               className="mr-3 accent-blue-400"
             />
             <div>
@@ -189,7 +203,7 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               name="movement"
               value="dvd"
               checked={config.movement === 'dvd'}
-              onChange={(e) => updateConfig({ movement: e.target.value as 'fade' | 'dvd' })}
+              onChange={(e) => updateConfig({ movement: e.target.value as 'fade' | 'dvd' | 'static' })}
               className="mr-3 accent-blue-400"
             />
             <div>

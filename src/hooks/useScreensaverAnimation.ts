@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface AnimationConfig {
-  movement: 'fade' | 'dvd';
+  movement: 'fade' | 'dvd' | 'static';
   fadeSpeed: number;
 }
 
@@ -207,6 +207,7 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
     } else if (config.movement === 'fade') {
       fadeAnimation.setContainerSize(width, height);
     }
+    // Para static, não precisamos configurar dimensões
   };
 
   // Configurar tamanho do elemento
@@ -216,6 +217,7 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
     } else if (config.movement === 'fade') {
       fadeAnimation.setElementSize(width, height);
     }
+    // Para static, não precisamos configurar tamanho
   };
 
   // Iniciar animação baseada no tipo
@@ -227,6 +229,7 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
       fadeAnimation.startFadeAnimation();
       return () => fadeAnimation.stopFadeAnimation();
     }
+    // Para static, não há animação para iniciar/parar
   }, [config.movement, config.fadeSpeed]);
 
   // Resetar animação quando config mudar
@@ -236,6 +239,7 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
     } else if (config.movement === 'fade') {
       fadeAnimation.resetFadeAnimation();
     }
+    // Para static, não há animação para resetar
   }, [config.movement]);
 
   // Retornar estado e estilo baseado no tipo de movimento
@@ -254,7 +258,7 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
         transition: 'none' // Sem transição para movimento suave
       }
     };
-  } else {
+  } else if (config.movement === 'fade') {
     return {
       animationState: {
         position: fadeAnimation.position,
@@ -267,6 +271,22 @@ export const useScreenSaverAnimation = (config: AnimationConfig) => {
         transform: `translate(${fadeAnimation.position.x}px, ${fadeAnimation.position.y}px)`,
         opacity: fadeAnimation.opacity,
         transition: `opacity 0.5s ease-in-out, transform 0.1s ease-out`
+      }
+    };
+  } else {
+    // Modo estático - centralizado na tela
+    return {
+      animationState: {
+        position: { x: 0, y: 0 },
+        opacity: 1,
+        isVisible: true
+      },
+      setContainerSize,
+      setElementSize,
+      style: {
+        transform: 'translate(-50%, -50%)',
+        opacity: 1,
+        transition: 'none'
       }
     };
   }

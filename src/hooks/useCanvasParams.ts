@@ -22,7 +22,7 @@ interface CanvasParams {
   timezone: string;
   showDate: boolean;
   showTrackInfoInClock: boolean;
-  movement: 'fade' | 'dvd';
+  movement: 'fade' | 'dvd' | 'static';
   fadeSpeed: number;
   
   // UI settings
@@ -60,7 +60,7 @@ export const useCanvasParams = (): CanvasParams => {
   const timezone = searchParams.get('timezone') || 'UTC-3';
   const showDate = searchParams.get('showDate') !== 'false';
   const showTrackInfoInClock = searchParams.get('showTrackInfo') !== 'false';
-  const movement = (searchParams.get('movement') as 'fade' | 'dvd') || 'fade';
+  const movement = (searchParams.get('movement') as 'fade' | 'dvd' | 'static') || 'fade';
   const fadeSpeed = parseFloat(searchParams.get('fadeSpeed') || '2');
   
   // UI settings

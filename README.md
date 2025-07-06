@@ -120,7 +120,7 @@ You can customize the screensaver behavior using URL query parameters:
 - `timezone`: Timezone (e.g., `America/New_York`) - Default: `auto`
 - `showDate`: Show date with clock (`true`, `false`) - Default: `true`
 - `showTrackInfo`: Show track info with clock (`true`, `false`) - Default: `true`
-- `movementMode`: Movement mode (`fade`, `dvd`) - Default: `fade`
+- `movementMode`: Movement mode (`static`, `fade`, `dvd`) - Default: `fade`
 - `fadeSpeed`: Fade speed in seconds (5-60) - Default: `15`
 
 #### General Parameters
@@ -142,6 +142,9 @@ http://localhost:3000/canvas?mode=standard&searchMode=specific&trackId=4iV5W9uYE
 
 # Screen Saver with DVD movement
 http://localhost:3000/canvas?mode=screensaver&displayMode=album1&movementMode=dvd&fadeSpeed=10
+
+# Screen Saver with static movement
+http://localhost:3000/canvas?mode=screensaver&displayMode=album1&movementMode=static
 
 # Portuguese language with debug mode
 http://localhost:3000/canvas?lang=pt&debug=true

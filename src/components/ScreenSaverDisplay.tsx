@@ -22,7 +22,7 @@ interface ScreenSaverConfig {
   timezone: string;
   showDate: boolean;
   showTrackInfo: boolean;
-  movement: 'fade' | 'dvd';
+  movement: 'fade' | 'dvd' | 'static';
   fadeSpeed: number;
 }
 
@@ -113,7 +113,11 @@ export const ScreenSaverDisplay = ({ config, track, debugMode = false, addDebugL
         className="absolute"
         style={{
           ...style,
-          position: 'absolute'
+          position: 'absolute',
+          ...(config.movement === 'static' && {
+            top: '50%',
+            left: '50%'
+          })
         }}
       >
         {shouldShowClock ? (
