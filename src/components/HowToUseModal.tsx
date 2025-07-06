@@ -134,24 +134,24 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Canvas:' : 'Canvas:'}
+                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? '• Exibir informações da faixa: Mostra título, artista e álbum sobrepostos no Canvas'
-                      : '• Show track information: Displays title, artist and album overlaid on the Canvas'
+                      ? '• Canvas: Exibir Canvas do Spotify quando disponível\n• Letras: Mostrar letras sincronizadas da música\n• Informações: Mostrar título, artista e álbum\n• Modos de letra: 5 linhas centralizadas ou alinhadas à esquerda'
+                      : '• Canvas: Display Spotify Canvas when available\n• Lyrics: Show synchronized song lyrics\n• Track Info: Display title, artist and album\n• Lyrics Modes: 5 lines centered or left-aligned'
                     }
                   </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Fallbacks:' : 'Fallbacks:'}
+                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? '• Estático: Exibição fixa da capa do álbum ou relógio\n• Fade In/Out: Transição suave com movimento\n• Movimento DVD: Animação clássica de quicar nas bordas'
-                      : '• Static: Fixed display of album cover or clock\n• Fade In/Out: Smooth transition with movement\n• DVD Movement: Classic bouncing animation on edges'
+                      ? '• Capas de álbum: Exibir capas com movimento\n• Relógio: Mostrar hora atual com opções de fuso horário\n• Movimento: Fade in/out ou animação DVD\n• Fallback: Relógio quando não há música tocando'
+                      : '• Album Covers: Display covers with movement\n• Clock: Show current time with timezone options\n• Movement: Fade in/out or DVD animation\n• Fallback: Clock when no music is playing'
                     }
                   </p>
                 </div>
@@ -170,6 +170,57 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
                     : 'Press ESC to exit the screensaver and return to the settings screen.'
                   }
                 </p>
+              </div>
+            </div>
+
+            {/* Query Parameters */}
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-3">
+                {language === 'pt' ? '6. Parâmetros de URL' : '6. URL Parameters'}
+              </h3>
+              <div className="bg-gray-700 rounded-lg p-4 space-y-3">
+                <p className="text-sm">
+                  {language === 'pt'
+                    ? 'Você pode personalizar o comportamento usando parâmetros na URL:'
+                    : 'You can customize behavior using URL parameters:'
+                  }
+                </p>
+                
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white text-sm">
+                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
+                  </h4>
+                  <div className="bg-gray-900 rounded p-3 font-mono text-xs space-y-1">
+                    <div><code className="text-blue-400">showCanvas=true/false</code> - {language === 'pt' ? 'Mostrar Canvas' : 'Show Canvas'}</div>
+                    <div><code className="text-blue-400">showLyrics=true/false</code> - {language === 'pt' ? 'Mostrar letras' : 'Show lyrics'}</div>
+                    <div><code className="text-blue-400">lyricsMode=5lines/left</code> - {language === 'pt' ? 'Modo de letras' : 'Lyrics mode'}</div>
+                    <div><code className="text-blue-400">searchMode=auto/specific</code> - {language === 'pt' ? 'Detecção de música' : 'Music detection'}</div>
+                    <div><code className="text-blue-400">trackId=ID_DA_FAIXA</code> - {language === 'pt' ? 'ID específico da faixa' : 'Specific track ID'}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white text-sm">
+                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
+                  </h4>
+                  <div className="bg-gray-900 rounded p-3 font-mono text-xs space-y-1">
+                    <div><code className="text-green-400">displayMode=album1/album2/clock</code> - {language === 'pt' ? 'Modo de exibição' : 'Display mode'}</div>
+                    <div><code className="text-green-400">clockFormat=12h/24h</code> - {language === 'pt' ? 'Formato do relógio' : 'Clock format'}</div>
+                    <div><code className="text-green-400">movementMode=fade/dvd</code> - {language === 'pt' ? 'Modo de movimento' : 'Movement mode'}</div>
+                    <div><code className="text-green-400">fadeSpeed=5-60</code> - {language === 'pt' ? 'Velocidade do fade (segundos)' : 'Fade speed (seconds)'}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white text-sm">
+                    {language === 'pt' ? 'Geral:' : 'General:'}
+                  </h4>
+                  <div className="bg-gray-900 rounded p-3 font-mono text-xs space-y-1">
+                    <div><code className="text-yellow-400">mode=standard/screensaver</code> - {language === 'pt' ? 'Modo de operação' : 'Operation mode'}</div>
+                    <div><code className="text-yellow-400">lang=en/pt</code> - {language === 'pt' ? 'Idioma' : 'Language'}</div>
+                    <div><code className="text-yellow-400">debug=true/false</code> - {language === 'pt' ? 'Modo debug' : 'Debug mode'}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

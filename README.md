@@ -105,50 +105,63 @@ npm run dev
 
 You can customize the screensaver behavior using URL query parameters:
 
-#### Basic Parameters
-- `mode`: Screensaver mode (`static`, `fade`, `dvd`) - Default: `static`
-- `fade`: Fade interval in milliseconds - Default: `3000`
-- `auto`: Auto update (`true`, `false`) - Default: `true`
-- `poll`: Polling interval in milliseconds - Default: `5000`
-- `info`: Show track info on Canvas bottom (`true`, `false`) - Default: `true`
+#### Standard Mode Parameters
+- `showCanvas`: Show Spotify Canvas (`true`, `false`) - Default: `true`
+- `showTrackInfo`: Show track info on Canvas (`true`, `false`) - Default: `true`
+- `showLyrics`: Show synchronized lyrics (`true`, `false`) - Default: `false`
+- `lyricsMode`: Lyrics display mode (`5lines`, `left`) - Default: `5lines`
+- `searchMode`: Music detection mode (`auto`, `specific`) - Default: `auto`
+- `trackId`: Specific Spotify track ID (when searchMode=specific)
+- `pollingInterval`: Auto-update interval in seconds (1-60) - Default: `5`
+
+#### Screen Saver Mode Parameters
+- `displayMode`: Display mode (`album1`, `album2`, `clock`) - Default: `album1`
+- `clockFormat`: Clock format (`12h`, `24h`) - Default: `12h`
+- `timezone`: Timezone (e.g., `America/New_York`) - Default: `auto`
+- `showDate`: Show date with clock (`true`, `false`) - Default: `true`
+- `showTrackInfo`: Show track info with clock (`true`, `false`) - Default: `true`
+- `movementMode`: Movement mode (`fade`, `dvd`) - Default: `fade`
+- `fadeSpeed`: Fade speed in seconds (5-60) - Default: `15`
+
+#### General Parameters
+- `mode`: Operation mode (`standard`, `screensaver`) - Default: `standard`
 - `lang`: Language (`en`, `pt`) - Default: `en`
-
-#### Debug Parameters
 - `debug`: Enable debug mode (`true`, `false`) - Default: `false`
-- `log_limit`: Maximum number of debug logs to keep (10-200) - Default: `50`
-- `timeout`: Video loading timeout in milliseconds before fallback - Default: `1000`
-
-#### Track Selection
-- `trackid`: Specific Spotify track ID to display (disables auto-update)
 
 ### Examples
 
 ```bash
-# Debug mode with extended timeout
-http://localhost:3000/canvas?debug=true&timeout=3000&log_limit=100
+# Standard mode with lyrics enabled
+http://localhost:3000/canvas?mode=standard&showLyrics=true&lyricsMode=left
 
-# DVD screensaver mode
-http://localhost:3000/canvas?mode=dvd&fade=2000
+# Screen Saver mode with clock
+http://localhost:3000/canvas?mode=screensaver&displayMode=clock&clockFormat=24h&showDate=true
 
-# Specific track with no auto-update
-http://localhost:3000/canvas?trackid=4iV5W9uYEdYUVa79Axb7Rh&auto=false
+# Specific track with custom settings
+http://localhost:3000/canvas?mode=standard&searchMode=specific&trackId=4iV5W9uYEdYUVa79Axb7Rh&showCanvas=true&showLyrics=true
 
-# Portuguese language with fade mode
-http://localhost:3000/canvas?lang=pt&mode=fade&info=false
+# Screen Saver with DVD movement
+http://localhost:3000/canvas?mode=screensaver&displayMode=album1&movementMode=dvd&fadeSpeed=10
+
+# Portuguese language with debug mode
+http://localhost:3000/canvas?lang=pt&debug=true
 ```
 
 ## 🎯 Features
 
-- ✅ Automatic TOTP authentication
-- ✅ Search for currently playing music
-- ✅ Fullscreen Canvas display
-- ✅ Automatic transition between multiple Canvas
-- ✅ Music information overlay
+- ✅ **Standard Mode**: Spotify Canvas display with synchronized lyrics
+- ✅ **Screen Saver Mode**: Album covers, clock, and movement animations
+- ✅ Automatic TOTP authentication with Spotify
+- ✅ Real-time music detection and Canvas fetching
+- ✅ Synchronized lyrics with multiple display modes
+- ✅ Multiple background modes (theme color, fixed color, album cover)
+- ✅ Clock display with timezone support and date options
+- ✅ DVD movement and fade animations
 - ✅ ESC key control to exit
 - ✅ Responsive and modern interface
 - ✅ Debug mode with detailed logging
-- ✅ Configurable video timeout and fallback
-- ✅ Multiple screensaver modes (static, fade, DVD)
+- ✅ Multi-language support (English/Portuguese)
+- ✅ Configurable polling intervals and fallbacks
 
 ## 🔧 Technologies
 
@@ -163,16 +176,25 @@ http://localhost:3000/canvas?lang=pt&mode=fade&info=false
 
 SpotSaver uses a robust TOTP (Time-based One-Time Password) authentication implementation that exactly simulates how the Spotify Web Player works:
 
+### Standard Mode
 1. **Authentication**: Generates TOTP tokens to authenticate with Spotify API
-2. **Music search**: Gets the currently playing music via Spotify Web API
-3. **Canvas**: Searches for available Canvas for the music via Spotify's internal API
-4. **Display**: Plays Canvas videos in fullscreen with music information
+2. **Music Detection**: Gets the currently playing music via Spotify Web API
+3. **Canvas Fetching**: Searches for available Canvas for the music via Spotify's internal API
+4. **Lyrics Sync**: Fetches synchronized lyrics and tracks player progress
+5. **Display**: Plays Canvas videos in fullscreen with lyrics overlay and music information
+
+### Screen Saver Mode
+1. **Display Selection**: Shows album covers, clock, or combination based on settings
+2. **Movement**: Applies fade in/out or DVD bouncing animations
+3. **Fallback**: Automatically switches to clock when no music is playing
+4. **Customization**: Supports timezone, date display, and track info overlays
 
 ## 🎨 Interface
 
-- **Home screen**: Instructions and start button
-- **Canvas screen**: Fullscreen video with information overlay
-- **Controls**: ESC to exit, automatic Canvas transition
+- **Home screen**: Mode selection (Standard/Screen Saver) with comprehensive settings
+- **Standard Mode**: Canvas display with lyrics, track info, and background options
+- **Screen Saver Mode**: Album covers, clock, and movement animations
+- **Controls**: ESC to exit, automatic transitions and fallbacks
 
 ## 🔒 Security
 
