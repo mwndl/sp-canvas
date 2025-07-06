@@ -151,6 +151,17 @@ export default function CanvasPage() {
     const currentTimeMs = playerProgress.progress;
     let idx = -1; // -1 = aguardando primeira linha
     
+    // Verificar se chegamos ao fim da música (última linha vazia)
+    const lastLine = lyrics.lines[lyrics.lines.length - 1];
+    if (lastLine && lastLine.words.trim() === '' && currentTimeMs >= parseInt(lastLine.startTimeMs)) {
+      // Música acabou, ocultar letras
+      setCurrentLyricIndex(-2); // -2 = música acabou
+      if (debugMode) {
+        addDebugLog('LYRICS', 'Track ended - hiding lyrics');
+      }
+      return;
+    }
+    
     // Encontrar a linha ativa, pulando instrumentais falsos
     for (let i = 0; i < lyrics.lines.length; i++) {
       const line = lyrics.lines[i];
@@ -234,6 +245,7 @@ export default function CanvasPage() {
     
     if (firstLineTime <= 0) return 0;
     
+    // Mostrar "..." gradualmente desde o início (0s) até o início da primeira linha
     const progress = Math.min(currentTimeMs / firstLineTime, 1);
     return progress;
   };
@@ -538,7 +550,7 @@ export default function CanvasPage() {
       )}
 
       {/* Lyrics Overlay */}
-      {showLyrics && lyrics && !isLyricsTransitioning && (
+      {showLyrics && lyrics && !isLyricsTransitioning && currentLyricIndex !== -2 && (
         <div
           className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none select-none"
           style={{ zIndex: 40 }}
@@ -585,7 +597,7 @@ export default function CanvasPage() {
               const isNext = idx === currentLyricIndex + 1;
               const isPrevious = idx === currentLyricIndex - 1;
               
-              // Estado de aguardando primeira linha - mostrar "..." animado no lugar da linha atual
+              // Estado de aguardando primeira linha - mostrar "..." animado gradualmente
               if (currentLyricIndex === -1 && idx === 0) {
                 const progress = getWaitingProgress();
                 
@@ -599,7 +611,7 @@ export default function CanvasPage() {
                     }`}
                     style={{
                       color: '#ffffff',
-                      opacity: 0.7,
+                      opacity: Math.max(0.3, progress * 0.7), // Opacidade gradual baseada no progresso
                       textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                       position: 'relative',
                       zIndex: 60,

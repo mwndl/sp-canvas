@@ -84,6 +84,17 @@ export const FallbackDisplay = ({
     const currentTimeMs = playerProgress.progress;
     let idx = -1; // -1 = aguardando primeira linha
     
+    // Verificar se chegamos ao fim da música (última linha vazia)
+    const lastLine = lyrics.lines[lyrics.lines.length - 1];
+    if (lastLine && lastLine.words.trim() === '' && currentTimeMs >= parseInt(lastLine.startTimeMs)) {
+      // Música acabou, ocultar letras
+      setCurrentLyricIndex(-2); // -2 = música acabou
+      if (debugMode) {
+        console.log('LYRICS', 'Track ended - hiding lyrics');
+      }
+      return;
+    }
+    
     // Encontrar a linha ativa, pulando instrumentais falsos
     for (let i = 0; i < lyrics.lines.length; i++) {
       const line = lyrics.lines[i];
@@ -145,6 +156,7 @@ export const FallbackDisplay = ({
     
     if (firstLineTime <= 0) return 0;
     
+    // Mostrar "..." gradualmente desde o início (0s) até o início da primeira linha
     const progress = Math.min(currentTimeMs / firstLineTime, 1);
     return progress;
   };
@@ -234,7 +246,7 @@ export const FallbackDisplay = ({
       </div>
 
       {/* Lyrics quando habilitadas - fora do container principal */}
-      {showLyrics && lyrics && !isLyricsTransitioning && (
+      {showLyrics && lyrics && !isLyricsTransitioning && currentLyricIndexState !== -2 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-50">
           <div 
             className={`mx-auto px-6 ${lyricsMode === 'left' ? 'w-full max-w-6xl' : 'w-full max-w-4xl text-center'}`}
@@ -310,7 +322,7 @@ export const FallbackDisplay = ({
                 const isNext = idx === currentLyricIndexState + 1;
                 const isPrevious = idx === currentLyricIndexState - 1;
                 
-                // Estado de aguardando primeira linha - mostrar "..." animado no lugar da linha atual
+                // Estado de aguardando primeira linha - mostrar "..." animado gradualmente
                 if (currentLyricIndexState === -1 && idx === 0) {
                   const progress = getWaitingProgress();
                   
@@ -324,7 +336,7 @@ export const FallbackDisplay = ({
                       }`}
                       style={{
                         color: '#ffffff',
-                        opacity: 0.7,
+                        opacity: Math.max(0.3, progress * 0.7), // Opacidade gradual baseada no progresso
                         ...(lyricsMode === 'left' && {
                           fontSize: '2rem',
                           lineHeight: '2.5rem',
