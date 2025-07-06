@@ -25,6 +25,7 @@ export const usePlayerProgress = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const endOfTrackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
   const maxRetries = 3;
   const lastUpdateRef = useRef<number>(0);
@@ -124,6 +125,47 @@ export const usePlayerProgress = ({
     }
   };
 
+  /**
+   * Função para agendar pooling após o fim teórico da música
+   * 
+   * Quando uma música está em reprodução, calculamos quando ela deve acabar
+   * e agendamos uma verificação do player para detectar se a música mudou
+   * ou se parou. Isso permite atualizar as interfaces imediatamente após
+   * o fim da música, sem esperar pelo próximo polling regular.
+   */
+  const scheduleEndOfTrackPolling = (progress: PlayerProgress) => {
+    if (!progress.isPlaying || !progress.duration || !progress.progress) {
+      return;
+    }
+
+    // Limpar timeout anterior se existir
+    if (endOfTrackTimeoutRef.current) {
+      clearTimeout(endOfTrackTimeoutRef.current);
+      endOfTrackTimeoutRef.current = null;
+    }
+
+    // Calcular tempo restante até o fim da música
+    const remainingTime = progress.duration - progress.progress;
+    
+    if (remainingTime > 0) {
+      // Adicionar um pequeno buffer (2 segundos) para garantir que a música realmente acabou
+      const timeoutDelay = remainingTime + 2000;
+      
+      if (debugMode) {
+        const remainingSeconds = Math.round(remainingTime / 1000);
+        const timeoutSeconds = Math.round(timeoutDelay / 1000);
+        addDebugLog('SCHEDULE', `Scheduling end-of-track polling in ${timeoutSeconds}s (track ends in ${remainingSeconds}s)`);
+      }
+
+      endOfTrackTimeoutRef.current = setTimeout(() => {
+        if (debugMode) {
+          addDebugLog('POLL', 'Track should have ended, fetching new player progress');
+        }
+        fetchPlayerProgress();
+      }, timeoutDelay);
+    }
+  };
+
   // Atualizar progresso estimado a cada 100ms para sincronização suave
   useEffect(() => {
     if (enabled && estimatedProgressRef.current?.isPlaying) {
@@ -131,6 +173,11 @@ export const usePlayerProgress = ({
         const estimated = getEstimatedProgress();
         if (estimated) {
           setPlayerProgress(estimated);
+          
+          // Verificar se chegou perto do fim da música para agendar pooling
+          if (estimated.progress >= estimated.duration * 0.95) { // 95% da duração
+            scheduleEndOfTrackPolling(estimated);
+          }
         }
       }, 100); // Atualizar a cada 100ms para sincronização suave
 
@@ -153,9 +200,21 @@ export const usePlayerProgress = ({
         if (pollingIntervalRef.current) {
           clearInterval(pollingIntervalRef.current);
         }
+        if (endOfTrackTimeoutRef.current) {
+          clearTimeout(endOfTrackTimeoutRef.current);
+        }
       };
     }
   }, [enabled, pollingInterval]);
+
+  // Limpar timeouts quando o componente for desmontado
+  useEffect(() => {
+    return () => {
+      if (endOfTrackTimeoutRef.current) {
+        clearTimeout(endOfTrackTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     playerProgress,

@@ -163,7 +163,10 @@ export const useCanvasFetch = ({
         lastTrackId,
         trackId: track?.id,
         lastTrackUri,
-        playerProgressTrackId: playerProgress.trackId
+        playerProgressTrackId: playerProgress.trackId,
+        isPlaying: playerProgress.isPlaying,
+        progress: playerProgress.progress,
+        duration: playerProgress.duration
       });
       
       // Se o trackId mudou, buscar novo Canvas
@@ -171,10 +174,20 @@ export const useCanvasFetch = ({
         console.log('🎵 Track changed detected via player progress:', currentTrackId, '->', lastTrackId);
         if (debugMode) {
           addDebugLog('INFO', `Track changed detected via player progress: ${lastTrackId} -> ${currentTrackId}`);
+          addDebugLog('INFO', `New track progress: ${Math.round(playerProgress.progress/1000)}s/${Math.round(playerProgress.duration/1000)}s, playing: ${playerProgress.isPlaying}`);
         }
         fetchCanvas();
       } else {
-        console.log('✅ Same track, no change detected');
+        // Mesmo track, mas verificar se é uma nova reprodução (progresso baixo)
+        if (playerProgress.progress < 5000 && lastTrackId) { // Menos de 5 segundos
+          console.log('🔄 Same track but low progress - might be a new play');
+          if (debugMode) {
+            addDebugLog('INFO', `Same track but low progress (${Math.round(playerProgress.progress/1000)}s) - might be a new play`);
+          }
+          // Não buscar novo canvas, mas atualizar o estado se necessário
+        } else {
+          console.log('✅ Same track, no change detected');
+        }
       }
     } else if (playerProgress && !playerProgress.trackId && lastTrackUri) {
       // Se não há trackId mas havia uma música antes, pode ter parado
@@ -187,7 +200,7 @@ export const useCanvasFetch = ({
       setLastTrackUri(null);
       setError(null);
     }
-  }, [playerProgress?.trackId, track?.id, lastTrackUri, debugMode, addDebugLog, fetchCanvas]);
+  }, [playerProgress?.trackId, playerProgress?.progress, playerProgress?.isPlaying, track?.id, lastTrackUri, debugMode, addDebugLog, fetchCanvas]);
 
   // Polling to check for track changes
   useEffect(() => {

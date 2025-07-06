@@ -83,13 +83,14 @@ export default function CanvasPage() {
   // Keyboard controls hook
   useKeyboardControls();
 
-  // Player progress hook - only enabled when lyrics are shown
+  // Player progress hook - enabled for end-of-track polling
+  // Sempre habilitado para detectar mudanças de música e fazer pooling após o fim teórico
   const {
     playerProgress,
     isLoading: isPlayerLoading,
     error: playerError
   } = usePlayerProgress({
-    enabled: showLyrics, // Só habilitado quando letras estão ativas
+    enabled: true, // Sempre habilitado para detectar mudanças de música
     pollingInterval: 5000, // 5 segundos
     debugMode,
     addDebugLog
