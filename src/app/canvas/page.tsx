@@ -400,6 +400,8 @@ export default function CanvasPage() {
           fadeSpeed
         }}
         track={track}
+        debugMode={debugMode}
+        addDebugLog={addDebugLog}
       />
     );
   }

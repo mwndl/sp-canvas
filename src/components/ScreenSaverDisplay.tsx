@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useScreenSaverAnimation } from '../hooks/useScreenSaverAnimation';
+import { useScreenSaverPlayerProgress } from '../hooks/useScreenSaverPlayerProgress';
+import { useScreenSaverCanvasFetch } from '../hooks/useScreenSaverCanvasFetch';
 import { ClockDisplay } from './ClockDisplay';
 import { AlbumDisplay } from './AlbumDisplay';
 
@@ -27,15 +29,51 @@ interface ScreenSaverConfig {
 interface ScreenSaverDisplayProps {
   config: ScreenSaverConfig;
   track: Track | null;
+  debugMode?: boolean;
+  addDebugLog?: (type: string, message: string) => void;
 }
 
-export const ScreenSaverDisplay = ({ config, track }: ScreenSaverDisplayProps) => {
+export const ScreenSaverDisplay = ({ config, track, debugMode = false, addDebugLog = () => {} }: ScreenSaverDisplayProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Player progress hook para detectar mudanças de música
+  const {
+    playerProgress,
+    isLoading: isPlayerLoading,
+    error: playerError
+  } = useScreenSaverPlayerProgress({
+    enabled: true, // Sempre habilitado no Screen Saver
+    debugMode,
+    addDebugLog
+  });
+
+  // Canvas fetch hook para buscar Canvas quando música mudar
+  const {
+    track: canvasTrack,
+    canvasData,
+    isLoading: isCanvasLoading,
+    error: canvasError
+  } = useScreenSaverCanvasFetch({
+    trackId: playerProgress?.trackId || null,
+    debugMode,
+    addDebugLog
+  });
+
   const { style, setContainerSize, setElementSize } = useScreenSaverAnimation({
     movement: config.movement,
     fadeSpeed: config.fadeSpeed
   });
+
+  // Usar track do Canvas se disponível, senão usar o track passado como prop
+  const currentTrack = canvasTrack || track;
+
+  // Detectar mudanças de música e fazer requisições quando necessário
+  useEffect(() => {
+    if (playerProgress?.trackId && debugMode) {
+      addDebugLog('SCREEN_SAVER', `Current track: ${playerProgress.trackId}, Progress: ${(playerProgress.progress/1000).toFixed(2)}s`);
+    }
+  }, [playerProgress, debugMode, addDebugLog]);
 
   // Configurar dimensões do container para animações
   useEffect(() => {
@@ -60,10 +98,10 @@ export const ScreenSaverDisplay = ({ config, track }: ScreenSaverDisplayProps) =
     return () => {
       window.removeEventListener('resize', updateDimensions);
     };
-  }, [setContainerSize, setElementSize, config.displayMode, track]);
-
+  }, [setContainerSize, setElementSize, config.displayMode, currentTrack]);
+  
   // Determinar o que exibir
-  const shouldShowClock = config.displayMode === 'clock' || !track;
+  const shouldShowClock = config.displayMode === 'clock' || !currentTrack;
 
   return (
     <div 
@@ -84,12 +122,12 @@ export const ScreenSaverDisplay = ({ config, track }: ScreenSaverDisplayProps) =
             timezone={config.timezone}
             showDate={config.showDate}
             showTrackInfo={config.showTrackInfo}
-            track={track}
+            track={currentTrack}
           />
         ) : (
           <AlbumDisplay
             mode={config.displayMode as 'album1' | 'album2'}
-            track={track}
+            track={currentTrack}
           />
         )}
       </div>

@@ -123,18 +123,6 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
                     }
                   </p>
                 </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Detecção de Música:' : 'Music Detection:'}
-                  </h4>
-                  <p>
-                    {language === 'pt'
-                      ? '• Automática: Detecta automaticamente a música que está tocando no Spotify\n• Específica: Insira o Track ID de uma música específica. Encontre o ID na URL: spotify.com/track/[ID]'
-                      : '• Auto: Automatically detects the music playing on Spotify\n• Specific: Enter a specific track ID. Find the ID in the URL: spotify.com/track/[ID]'
-                    }
-                  </p>
-                </div>
               </div>
             </div>
 
