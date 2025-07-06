@@ -40,6 +40,26 @@ export interface Translations {
   howToUse: string;
   seconds: string;
   second: string;
+  // Novas traduções
+  operationMode: string;
+  standard: string;
+  screenSaver: string;
+  showCanvas: string;
+  showCanvasHelp: string;
+  showTrackInfoOnCanvas: string;
+  showTrackInfoOnCanvasHelp: string;
+  showLyrics: string;
+  showLyricsHelp: string;
+  lyricsModeTitle: string;
+  lyricsMode5LinesDesc: string;
+  lyricsModeLeftDesc: string;
+  musicDetection: string;
+  autoDetectCurrentTrack: string;
+  searchSpecificTrack: string;
+  trackIdOrUrl: string;
+  updateIntervalTitle: string;
+  updateIntervalHelpText: string;
+  loading: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -76,13 +96,33 @@ const translations: Record<Language, Translations> = {
     dvdMovement: 'Movimento DVD',
     fadeInterval: 'Intervalo do Fade (segundos)',
     fadeIntervalHelp: 'Fade in/out a cada {interval} segundo{plural}',
-    startScreensaver: 'Iniciar Screensaver',
+    startScreensaver: 'Iniciar',
     searchAndStart: 'Buscar e Iniciar',
     starting: 'Iniciando...',
     pressEscToExit: 'Pressione ESC para sair do screensaver',
     howToUse: 'Como usar',
     seconds: 's',
-    second: ''
+    second: '',
+    // Novas traduções
+    operationMode: 'Modo de Operação',
+    standard: 'Padrão',
+    screenSaver: 'Screen Saver',
+    showCanvas: 'Show Canvas',
+    showCanvasHelp: 'Exibir Canvas do Spotify quando disponível',
+    showTrackInfoOnCanvas: 'Show track info on Canvas',
+    showTrackInfoOnCanvasHelp: 'Exibir informações da música sobre o Canvas',
+    showLyrics: 'Show Lyrics',
+    showLyricsHelp: 'Exibir letras da música sincronizadas',
+    lyricsModeTitle: 'Lyrics Mode',
+    lyricsMode5LinesDesc: '5 lines (centered)',
+    lyricsModeLeftDesc: 'Left aligned',
+    musicDetection: 'Music Detection',
+    autoDetectCurrentTrack: 'Auto detect current track',
+    searchSpecificTrack: 'Search specific track',
+    trackIdOrUrl: 'Spotify Track ID or URL',
+    updateIntervalTitle: 'Update Interval',
+    updateIntervalHelpText: 'Check for new tracks every X seconds',
+    loading: 'Carregando...'
   },
   en: {
     title: 'SpotSaver',
@@ -117,13 +157,33 @@ const translations: Record<Language, Translations> = {
     dvdMovement: 'DVD Movement',
     fadeInterval: 'Fade Interval (seconds)',
     fadeIntervalHelp: 'Fade in/out every {interval} second{plural}',
-    startScreensaver: 'Start Screensaver',
+    startScreensaver: 'Start',
     searchAndStart: 'Search and Start',
     starting: 'Starting...',
     pressEscToExit: 'Press ESC to exit screensaver',
     howToUse: 'How to use',
     seconds: 's',
-    second: ''
+    second: '',
+    // Novas traduções
+    operationMode: 'Operation Mode',
+    standard: 'Standard',
+    screenSaver: 'Screen Saver',
+    showCanvas: 'Show Canvas',
+    showCanvasHelp: 'Display Spotify Canvas when available',
+    showTrackInfoOnCanvas: 'Show track info on Canvas',
+    showTrackInfoOnCanvasHelp: 'Display music information over the Canvas',
+    showLyrics: 'Show Lyrics',
+    showLyricsHelp: 'Display synchronized song lyrics',
+    lyricsModeTitle: 'Lyrics Mode',
+    lyricsMode5LinesDesc: '5 lines (centered)',
+    lyricsModeLeftDesc: 'Left aligned',
+    musicDetection: 'Music Detection',
+    autoDetectCurrentTrack: 'Auto detect current track',
+    searchSpecificTrack: 'Search specific track',
+    trackIdOrUrl: 'Spotify Track ID or URL',
+    updateIntervalTitle: 'Update Interval',
+    updateIntervalHelpText: 'Check for new tracks every X seconds',
+    loading: 'Loading...'
   }
 };
 

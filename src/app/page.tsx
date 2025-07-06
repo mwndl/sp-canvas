@@ -161,7 +161,7 @@ export default function Home() {
 
         {/* Mode Selection */}
         <div className="p-4 border-b border-gray-700">
-          <h3 className="text-white font-medium mb-3">Modo de Operação</h3>
+          <h3 className="text-white font-medium mb-3">{t.operationMode}</h3>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setMode('standard')}
@@ -171,7 +171,7 @@ export default function Home() {
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              Padrão
+              {t.standard}
             </button>
             <button
               onClick={() => setMode('screensaver')}
@@ -181,7 +181,7 @@ export default function Home() {
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              Screen Saver
+              {t.screenSaver}
             </button>
           </div>
         </div>
@@ -192,8 +192,8 @@ export default function Home() {
             {/* Show Canvas */}
           <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
             <div className="flex-1">
-              <h3 className="text-white font-medium">Show Canvas</h3>
-              <p className="text-gray-400 text-sm">Exibir Canvas do Spotify quando disponível</p>
+              <h3 className="text-white font-medium">{t.showCanvas}</h3>
+              <p className="text-gray-400 text-sm">{t.showCanvasHelp}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -210,8 +210,8 @@ export default function Home() {
           {showCanvas && (
             <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors bg-gray-750/30">
               <div className="flex-1">
-                <h3 className="text-white font-medium">Show track info on Canvas</h3>
-                <p className="text-gray-400 text-sm">Exibir informações da música sobre o Canvas</p>
+                <h3 className="text-white font-medium">{t.showTrackInfoOnCanvas}</h3>
+                <p className="text-gray-400 text-sm">{t.showTrackInfoOnCanvasHelp}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -228,8 +228,8 @@ export default function Home() {
           {/* Show Lyrics */}
           <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
             <div className="flex-1">
-              <h3 className="text-white font-medium">Show Lyrics</h3>
-              <p className="text-gray-400 text-sm">Exibir letras da música sincronizadas</p>
+              <h3 className="text-white font-medium">{t.showLyrics}</h3>
+              <p className="text-gray-400 text-sm">{t.showLyricsHelp}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -245,7 +245,7 @@ export default function Home() {
           {/* Lyrics Mode */}
           {showLyrics && (
             <div className="p-4 bg-gray-750/30">
-              <h3 className="text-white font-medium mb-3">Lyrics Mode</h3>
+              <h3 className="text-white font-medium mb-3">{t.lyricsModeTitle}</h3>
               <div className="space-y-2">
                 <label className="flex items-center">
                   <input
@@ -256,7 +256,7 @@ export default function Home() {
                     onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
                     className="mr-3 accent-blue-400"
                   />
-                  <span className="text-gray-300">5 lines (centered)</span>
+                  <span className="text-gray-300">{t.lyricsMode5LinesDesc}</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -267,7 +267,7 @@ export default function Home() {
                     onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
                     className="mr-3 accent-blue-400"
                   />
-                  <span className="text-gray-300">Left aligned</span>
+                  <span className="text-gray-300">{t.lyricsModeLeftDesc}</span>
                 </label>
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function Home() {
 
           {/* Music Detection */}
           <div className="p-4 hover:bg-gray-750 transition-colors">
-            <h3 className="text-white font-medium mb-3">Music Detection</h3>
+            <h3 className="text-white font-medium mb-3">{t.musicDetection}</h3>
             <div className="space-y-3">
               <label className="flex items-center">
                 <input
@@ -286,7 +286,7 @@ export default function Home() {
                   onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
                   className="mr-3 accent-blue-400"
                 />
-                <span className="text-gray-300">Auto detect current track</span>
+                <span className="text-gray-300">{t.autoDetectCurrentTrack}</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -297,7 +297,7 @@ export default function Home() {
                   onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
                   className="mr-3 accent-blue-400"
                 />
-                <span className="text-gray-300">Search specific track</span>
+                <span className="text-gray-300">{t.searchSpecificTrack}</span>
               </label>
               
               {/* Track ID Input */}
@@ -307,7 +307,7 @@ export default function Home() {
                     type="text"
                     value={trackId}
                     onChange={(e) => setTrackId(e.target.value)}
-                    placeholder="Spotify Track ID or URL"
+                    placeholder={t.trackIdOrUrl}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
                   />
                 </div>
@@ -319,8 +319,8 @@ export default function Home() {
           {searchMode === 'auto' && (
             <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
               <div className="flex-1">
-                <h3 className="text-white font-medium">Update Interval</h3>
-                <p className="text-gray-400 text-sm">Check for new tracks every X seconds</p>
+                <h3 className="text-white font-medium">{t.updateIntervalTitle}</h3>
+                <p className="text-gray-400 text-sm">{t.updateIntervalHelpText}</p>
               </div>
               <input
                 type="number"
@@ -358,7 +358,7 @@ export default function Home() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Carregando...</span>
+                <span>{t.loading}</span>
               </>
             ) : (
               <span>{t.startScreensaver}</span>
