@@ -19,7 +19,7 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">
-              {language === 'pt' ? 'Como Usar o SpotSaver' : 'How to Use SpotSaver'}
+              {language === 'pt' ? 'Como Usar o SpCanvas' : 'How to Use SpCanvas'}
             </h2>
             <button
               onClick={onClose}
@@ -37,10 +37,10 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               </h3>
               <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                 <p>
-                  {language === 'pt' 
-                    ? 'Para que o SpotSaver funcione, você precisa configurar uma variável de ambiente com seu cookie sp_dc do Spotify:'
-                    : 'For SpotSaver to work, you need to configure an environment variable with your Spotify sp_dc cookie:'
-                  }
+                          {language === 'pt' 
+          ? 'Para que o SpCanvas funcione, você precisa configurar uma variável de ambiente com seu cookie sp_dc do Spotify:'
+          : 'For SpCanvas to work, you need to configure an environment variable with your Spotify sp_dc cookie:'
+        }
                 </p>
                 <div className="bg-gray-900 rounded p-3 font-mono text-sm">
                   <code className="text-green-400">SPOTIFY_SP_DC=seu_cookie_sp_dc_aqui</code>

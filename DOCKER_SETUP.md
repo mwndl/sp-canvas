@@ -21,7 +21,7 @@
 1. **Clone and setup**:
    ```bash
    git clone <repository-url>
-   cd spotsaver
+   cd spcanvas
    cp env.example .env
    ```
 
@@ -40,8 +40,8 @@
    docker-compose up -d
    
    # Option 3: Manual Docker
-   docker build -t spotsaver:latest .
-   docker run -d --name spotsaver -p 3000:3000 --env-file .env spotsaver:latest
+   docker build -t spcanvas:latest .
+docker run -d --name spcanvas -p 3000:3000 --env-file .env spcanvas:latest
    ```
 
 4. **Access the application**:
@@ -71,7 +71,7 @@ newgrp docker
 lsof -i :3000
 
 # Use a different port
-docker run -d --name spotsaver -p 3001:3000 --env-file .env spotsaver:latest
+docker run -d --name spcanvas -p 3001:3000 --env-file .env spcanvas:latest
 ```
 
 ### Build fails
@@ -80,20 +80,20 @@ docker run -d --name spotsaver -p 3001:3000 --env-file .env spotsaver:latest
 docker system prune -a
 
 # Rebuild without cache
-docker build --no-cache -t spotsaver:latest .
+docker build --no-cache -t spcanvas:latest .
 ```
 
 ### Container won't start
 ```bash
 # Check logs
-docker logs spotsaver
+docker logs spcanvas
 
 # Check container status
 docker ps -a
 
 # Remove and recreate
-docker rm spotsaver
-docker run -d --name spotsaver -p 3000:3000 --env-file .env spotsaver:latest
+docker rm spcanvas
+docker run -d --name spcanvas -p 3000:3000 --env-file .env spcanvas:latest
 ```
 
 ## Production Deployment
@@ -117,21 +117,21 @@ docker-compose up -d --build
 ### Using Docker directly
 ```bash
 # Build image
-docker build -t spotsaver:latest .
+docker build -t spcanvas:latest .
 
 # Run with restart policy
 docker run -d \
-  --name spotsaver \
+  --name spcanvas \
   -p 3000:3000 \
   --env-file .env \
   --restart unless-stopped \
-  spotsaver:latest
+  spcanvas:latest
 
 # Update
-docker stop spotsaver
-docker rm spotsaver
-docker build -t spotsaver:latest .
-docker run -d --name spotsaver -p 3000:3000 --env-file .env --restart unless-stopped spotsaver:latest
+docker stop spcanvas
+docker rm spcanvas
+docker build -t spcanvas:latest .
+docker run -d --name spcanvas -p 3000:3000 --env-file .env --restart unless-stopped spcanvas:latest
 ```
 
 ## Environment Variables
@@ -166,22 +166,22 @@ docker ps
 docker ps -a
 
 # View logs
-docker logs -f spotsaver
+docker logs -f spcanvas
 
 # Execute commands in container
-docker exec -it spotsaver sh
+docker exec -it spcanvas sh
 
 # Stop container
-docker stop spotsaver
+docker stop spcanvas
 
 # Start container
-docker start spotsaver
+docker start spcanvas
 
 # Remove container
-docker rm spotsaver
+docker rm spcanvas
 
 # Remove image
-docker rmi spotsaver:latest
+docker rmi spcanvas:latest
 
 # Clean up unused resources
 docker system prune

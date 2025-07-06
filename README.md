@@ -1,6 +1,6 @@
-# SpotSaver - Spotify Canvas Screensaver
+# SpCanvas - Spotify Visual Experience
 
-An elegant screensaver that displays the Spotify Canvas of the currently playing music in fullscreen.
+A comprehensive visual companion for Spotify that displays Canvas videos, synchronized lyrics, and creates beautiful screensavers with your music.
 
 ## 🚀 How to use
 
@@ -11,7 +11,7 @@ An elegant screensaver that displays the Spotify Canvas of the currently playing
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd spotsaver
+cd spcanvas
 ```
 
 2. Configure the environment variable:
@@ -30,8 +30,8 @@ cd spotsaver
 docker-compose up -d
 
 # Or manually with docker
-docker build -t spotsaver:latest .
-docker run -d --name spotsaver -p 3000:3000 --env-file .env spotsaver:latest
+docker build -t spcanvas:latest .
+docker run -d --name spcanvas -p 3000:3000 --env-file .env spcanvas:latest
 ```
 
 4. Access `http://localhost:3000` in your browser
@@ -41,16 +41,16 @@ docker run -d --name spotsaver -p 3000:3000 --env-file .env spotsaver:latest
 
 ```bash
 # View logs
-docker logs -f spotsaver
+docker logs -f spcanvas
 
 # Stop container
-docker stop spotsaver
+docker stop spcanvas
 
 # Start container
-docker start spotsaver
+docker start spcanvas
 
 # Remove container
-docker rm spotsaver
+docker rm spcanvas
 
 # Update and restart
 docker-compose down
@@ -64,7 +64,7 @@ docker-compose up -d --build
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd spotsaver
+cd spcanvas
 ```
 
 2. Install dependencies:
@@ -152,19 +152,38 @@ http://localhost:3000/canvas?lang=pt&debug=true
 
 ## 🎯 Features
 
-- ✅ **Standard Mode**: Spotify Canvas display with synchronized lyrics
-- ✅ **Screen Saver Mode**: Album covers, clock, and movement animations
-- ✅ Automatic TOTP authentication with Spotify
-- ✅ Real-time music detection and Canvas fetching
-- ✅ Synchronized lyrics with multiple display modes
-- ✅ Multiple background modes (theme color, fixed color, album cover)
-- ✅ Clock display with timezone support and date options
-- ✅ DVD movement and fade animations
-- ✅ ESC key control to exit
-- ✅ Responsive and modern interface
-- ✅ Debug mode with detailed logging
-- ✅ Multi-language support (English/Portuguese)
-- ✅ Configurable polling intervals and fallbacks
+### 🎵 **Music Visualization**
+- ✅ **Spotify Canvas Videos**: Fullscreen display of official Canvas videos
+- ✅ **Real-time Music Detection**: Automatically detects currently playing music
+- ✅ **Specific Track Support**: Display Canvas for any Spotify track by ID
+- ✅ **End-of-Track Polling**: Intelligent polling after music ends for immediate updates
+
+### 📝 **Synchronized Lyrics**
+- ✅ **Real-time Lyrics Sync**: Lyrics synchronized with music playback
+- ✅ **Multiple Display Modes**: 5-line centered or left-aligned layouts
+- ✅ **Instrumental Detection**: Smart detection and animation of instrumental sections
+- ✅ **Gradual Loading**: "..." animation before first lyric appears
+- ✅ **Auto-hide**: Lyrics automatically hide when music ends
+
+### 🖼️ **Screensaver Modes**
+- ✅ **Album Cover Display**: Beautiful album cover presentations
+- ✅ **Clock Mode**: Elegant clock with timezone support
+- ✅ **Movement Animations**: Fade, DVD bounce, or static modes
+- ✅ **Fallback System**: Automatic fallback to clock when no music plays
+
+### 🎨 **Visual Customization**
+- ✅ **Background Modes**: Theme colors, fixed colors, or album covers
+- ✅ **Track Information**: Artist, album, and song details overlay
+- ✅ **Responsive Design**: Works on any screen size
+- ✅ **Modern Interface**: Clean, professional UI
+
+### ⚙️ **Advanced Features**
+- ✅ **TOTP Authentication**: Secure Spotify API authentication
+- ✅ **Multi-language Support**: English and Portuguese interfaces
+- ✅ **Debug Mode**: Detailed logging and troubleshooting
+- ✅ **Keyboard Controls**: ESC key to exit
+- ✅ **Configurable Polling**: Customizable update intervals
+- ✅ **Cache System**: Efficient API usage with intelligent caching
 
 ## 🔧 Technologies
 
@@ -177,27 +196,35 @@ http://localhost:3000/canvas?lang=pt&debug=true
 
 ## 📱 How it works
 
-SpotSaver uses a robust TOTP (Time-based One-Time Password) authentication implementation that exactly simulates how the Spotify Web Player works:
+SpCanvas uses a robust TOTP (Time-based One-Time Password) authentication implementation that exactly simulates how the Spotify Web Player works:
 
-### Standard Mode
+### 🎵 **Music Visualization Mode**
 1. **Authentication**: Generates TOTP tokens to authenticate with Spotify API
 2. **Music Detection**: Gets the currently playing music via Spotify Web API
 3. **Canvas Fetching**: Searches for available Canvas for the music via Spotify's internal API
-4. **Lyrics Sync**: Fetches synchronized lyrics and tracks player progress
-5. **Display**: Plays Canvas videos in fullscreen with lyrics overlay and music information
+4. **Lyrics Sync**: Fetches synchronized lyrics and tracks player progress in real-time
+5. **End-of-Track Detection**: Intelligently schedules polling after music ends
+6. **Display**: Plays Canvas videos in fullscreen with synchronized lyrics overlay
 
-### Screen Saver Mode
+### 🖼️ **Screensaver Mode**
 1. **Display Selection**: Shows album covers, clock, or combination based on settings
-2. **Movement**: Applies fade in/out or DVD bouncing animations
+2. **Movement**: Applies fade in/out, DVD bouncing, or static animations
 3. **Fallback**: Automatically switches to clock when no music is playing
 4. **Customization**: Supports timezone, date display, and track info overlays
 
+### 📝 **Lyrics System**
+1. **Real-time Sync**: Tracks player progress and highlights current lyrics
+2. **Smart Detection**: Identifies instrumental sections and animates them
+3. **Gradual Loading**: Shows "..." animation before first lyric appears
+4. **Auto-hide**: Automatically hides lyrics when music ends
+
 ## 🎨 Interface
 
-- **Home screen**: Mode selection (Standard/Screen Saver) with comprehensive settings
-- **Standard Mode**: Canvas display with lyrics, track info, and background options
-- **Screen Saver Mode**: Album covers, clock, and movement animations
+- **Home Screen**: Mode selection (Music Visualization/Screensaver) with comprehensive settings
+- **Music Visualization Mode**: Canvas display with synchronized lyrics, track info, and background options
+- **Screensaver Mode**: Album covers, clock, and movement animations
 - **Controls**: ESC to exit, automatic transitions and fallbacks
+- **Debug Panel**: Real-time logging and system status when debug mode is enabled
 
 ## 🔒 Security
 
@@ -234,7 +261,7 @@ SpotSaver uses a robust TOTP (Time-based One-Time Password) authentication imple
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd spotsaver
+cd spcanvas
 cp env.example .env
 # Edit .env with your SPOTIFY_SP_DC value
 
@@ -248,8 +275,8 @@ cp env.example .env
 docker-compose up -d
 
 # Using docker directly
-docker build -t spotsaver:latest .
-docker run -d --name spotsaver -p 3000:3000 --env-file .env --restart unless-stopped spotsaver:latest
+docker build -t spcanvas:latest .
+docker run -d --name spcanvas -p 3000:3000 --env-file .env --restart unless-stopped spcanvas:latest
 ```
 
 ### Environment Variables

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * SpotSaver - Spotify Screensaver
+ * SpCanvas - Spotify Visual Experience
  * 
  * Query Parameters:
  * - mode: 'static' | 'fade' | 'dvd' - Screensaver mode

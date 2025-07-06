@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# SpotSaver Docker Build Script
-# This script builds and runs the SpotSaver application using Docker
+# SpCanvas Docker Build Script
+# This script builds and runs the SpCanvas application using Docker
 
 set -e
 
-echo "🐳 Building SpotSaver Docker image..."
+echo "🐳 Building SpCanvas Docker image..."
 
 # Check if .env file exists
 if [ ! -f .env ]; then
@@ -23,7 +23,7 @@ fi
 
 # Build the Docker image
 echo "🔨 Building image..."
-docker build -t spotsaver:latest .
+docker build -t spcanvas:latest .
 
 echo "✅ Build completed successfully!"
 
@@ -32,35 +32,35 @@ echo ""
 read -p "Do you want to run the container now? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "🚀 Starting SpotSaver container..."
+    echo "🚀 Starting SpCanvas container..."
     
     # Check if container is already running
-    if docker ps -q -f name=spotsaver | grep -q .; then
+    if docker ps -q -f name=spcanvas | grep -q .; then
         echo "🛑 Stopping existing container..."
-        docker stop spotsaver
-        docker rm spotsaver
+        docker stop spcanvas
+        docker rm spcanvas
     fi
     
     # Run the container
     docker run -d \
-        --name spotsaver \
+        --name spcanvas \
         -p 3000:3000 \
         --env-file .env \
         --restart unless-stopped \
-        spotsaver:latest
+        spcanvas:latest
     
-    echo "✅ SpotSaver is now running!"
+    echo "✅ SpCanvas is now running!"
     echo "🌐 Access the application at: http://localhost:3000"
     echo ""
     echo "📋 Useful commands:"
-    echo "   View logs: docker logs -f spotsaver"
-    echo "   Stop: docker stop spotsaver"
-    echo "   Start: docker start spotsaver"
-    echo "   Remove: docker rm spotsaver"
+    echo "   View logs: docker logs -f spcanvas"
+    echo "   Stop: docker stop spcanvas"
+    echo "   Start: docker start spcanvas"
+    echo "   Remove: docker rm spcanvas"
 else
     echo ""
     echo "📋 To run the container manually:"
-    echo "   docker run -d --name spotsaver -p 3000:3000 --env-file .env spotsaver:latest"
+    echo "   docker run -d --name spcanvas -p 3000:3000 --env-file .env spcanvas:latest"
     echo ""
     echo "   Or use docker-compose:"
     echo "   docker-compose up -d"

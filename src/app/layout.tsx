@@ -1,8 +1,8 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'SpotSaver - Spotify Canvas Screensaver',
-  description: 'Exiba o Canvas das suas músicas do Spotify em tela cheia como proteção de tela',
+  title: 'SpCanvas - Spotify Visual Experience',
+  description: 'A comprehensive visual companion for Spotify with Canvas videos, synchronized lyrics, and beautiful screensavers',
 }
 
 export default function RootLayout({
