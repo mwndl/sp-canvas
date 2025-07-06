@@ -60,6 +60,41 @@ export interface Translations {
   updateIntervalTitle: string;
   updateIntervalHelpText: string;
   loading: string;
+  // Screen Saver traduções
+  albumCover1: string;
+  albumCover1Desc: string;
+  albumCover2: string;
+  albumCover2Desc: string;
+  clock: string;
+  clockDesc: string;
+  clockSettings: string;
+  clockFallbackMessage: string;
+  clockFormat: string;
+  clockFormat12h: string;
+  clockFormat24h: string;
+  timezone: string;
+  showDate: string;
+  showDateHelp: string;
+  showTrackInfoInClock: string;
+  showTrackInfoInClockHelp: string;
+  movement: string;
+  staticDesc: string;
+  fadeInOutDesc: string;
+  dvdMovementDesc: string;
+  displayTime: string;
+  displayTimeHelp: string;
+  // How to use modal traduções
+  standardMode: string;
+  screenSaverMode: string;
+  standardModeDescription: string;
+  screenSaverModeDescription: string;
+  standardModeFeatures: string;
+  screenSaverModeFeatures: string;
+  standardModeFeaturesList: string;
+  screenSaverModeFeaturesList: string;
+  displayModeParam: string;
+  clockFormatParam: string;
+  movementModeParam: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -106,23 +141,58 @@ const translations: Record<Language, Translations> = {
     // Novas traduções
     operationMode: 'Modo de Operação',
     standard: 'Padrão',
-    screenSaver: 'Screen Saver',
-    showCanvas: 'Show Canvas',
+    screenSaver: 'Proteção de Tela',
+    showCanvas: 'Exibir Canvas',
     showCanvasHelp: 'Exibir Canvas do Spotify quando disponível',
-    showTrackInfoOnCanvas: 'Show track info on Canvas',
+    showTrackInfoOnCanvas: 'Exibir informações da música sobre o Canvas',
     showTrackInfoOnCanvasHelp: 'Exibir informações da música sobre o Canvas',
-    showLyrics: 'Show Lyrics',
+    showLyrics: 'Exibir letras da música sincronizadas',
     showLyricsHelp: 'Exibir letras da música sincronizadas',
-    lyricsModeTitle: 'Lyrics Mode',
-    lyricsMode5LinesDesc: '5 lines (centered)',
-    lyricsModeLeftDesc: 'Left aligned',
-    musicDetection: 'Music Detection',
-    autoDetectCurrentTrack: 'Auto detect current track',
-    searchSpecificTrack: 'Search specific track',
-    trackIdOrUrl: 'Spotify Track ID or URL',
-    updateIntervalTitle: 'Update Interval',
-    updateIntervalHelpText: 'Check for new tracks every X seconds',
-    loading: 'Carregando...'
+    lyricsModeTitle: 'Modo de Letras',
+    lyricsMode5LinesDesc: '5 linhas (centralizado)',
+    lyricsModeLeftDesc: 'Alinhado à esquerda',
+    musicDetection: 'Detecção de Música',
+    autoDetectCurrentTrack: 'Detectar música atual automaticamente',
+    searchSpecificTrack: 'Buscar faixa específica',
+    trackIdOrUrl: 'ID da Faixa do Spotify ou URL',
+    updateIntervalTitle: 'Intervalo de Atualização',
+    updateIntervalHelpText: 'Verificar novas faixas a cada X segundos',
+    loading: 'Carregando...',
+    // Screen Saver traduções
+    albumCover1: 'Capa do álbum 1',
+    albumCover1Desc: 'Capa centralizada com informações abaixo',
+    albumCover2: 'Capa do álbum 2',
+    albumCover2Desc: 'Capa à esquerda com informações à direita',
+    clock: 'Relógio',
+    clockDesc: 'Exibir relógio e data centralizados',
+    clockSettings: 'Configurações do Relógio',
+    clockFallbackMessage: 'Quando não houver faixa em reprodução, exibiremos o relógio como fallback',
+    clockFormat: 'Formato do Horário',
+    clockFormat12h: '12 horas (AM/PM)',
+    clockFormat24h: '24 horas',
+    timezone: 'Fuso Horário',
+    showDate: 'Exibir Data',
+    showDateHelp: 'Mostrar data atual abaixo do horário',
+    showTrackInfoInClock: 'Exibir Dados da Faixa',
+    showTrackInfoInClockHelp: 'Mostrar informações da música atual',
+    movement: 'Movimento',
+    staticDesc: 'Centralizado na tela sem movimento',
+    fadeInOutDesc: 'Desaparecer e aparecer em posições diferentes',
+    dvdMovementDesc: 'Movimento clássico de descanso de tela de DVD',
+    displayTime: 'Tempo de Exibição',
+    displayTimeHelp: 'Tempo que o elemento fica visível antes do fade (segundos)',
+    // How to use modal traduções
+    standardMode: 'Modo Padrão',
+    screenSaverMode: 'Modo Screen Saver',
+    standardModeDescription: 'Exibe Canvas do Spotify com letras sincronizadas e informações da música. Detecta automaticamente a música atual e sincroniza as letras com o progresso da música.',
+    screenSaverModeDescription: 'Exibe capas de álbum, relógio ou ambos com animações de movimento. Quando não há música tocando, automaticamente mostra o relógio.',
+    standardModeFeatures: 'Características do Modo Padrão:',
+    screenSaverModeFeatures: 'Características do Modo Screen Saver:',
+    standardModeFeaturesList: '• Canvas: Vídeo animado do Spotify quando disponível\n• Letras: Sincronizadas com o progresso da música\n• Informações: Nome da música, artista e álbum\n• Detecção: Automática da música atual\n• Fallback: Capa do álbum quando não há Canvas',
+    screenSaverModeFeaturesList: '• Exibição: Capas de álbum (2 estilos), relógio, ou ambos\n• Relógio: Formato 12h/24h, fuso horário, data opcional\n• Movimento: Fade in/out suave ou animação DVD\n• Fallback: Relógio quando não há música tocando',
+    displayModeParam: 'Modo de exibição',
+    clockFormatParam: 'Formato do relógio',
+    movementModeParam: 'Modo de movimento'  
   },
   en: {
     title: 'SpotSaver',
@@ -178,12 +248,47 @@ const translations: Record<Language, Translations> = {
     lyricsMode5LinesDesc: '5 lines (centered)',
     lyricsModeLeftDesc: 'Left aligned',
     musicDetection: 'Music Detection',
-    autoDetectCurrentTrack: 'Auto detect current track',
-    searchSpecificTrack: 'Search specific track',
-    trackIdOrUrl: 'Spotify Track ID or URL',
+    autoDetectCurrentTrack: 'Detectar música atual automaticamente',
+    searchSpecificTrack: 'Buscar faixa específica',
+    trackIdOrUrl: 'ID da Faixa do Spotify ou URL',
     updateIntervalTitle: 'Update Interval',
     updateIntervalHelpText: 'Check for new tracks every X seconds',
-    loading: 'Loading...'
+    loading: 'Loading...',
+    // Screen Saver traduções
+    albumCover1: 'Album Cover 1',
+    albumCover1Desc: 'Centered cover with info below',
+    albumCover2: 'Album Cover 2',
+    albumCover2Desc: 'Cover on left with info on right',
+    clock: 'Clock',
+    clockDesc: 'Display clock and date centered',
+    clockSettings: 'Clock Settings',
+    clockFallbackMessage: 'When no track is playing, we will display the clock as fallback',
+    clockFormat: 'Time Format',
+    clockFormat12h: '12 hours (AM/PM)',
+    clockFormat24h: '24 hours',
+    timezone: 'Timezone',
+    showDate: 'Show Date',
+    showDateHelp: 'Show current date below time',
+    showTrackInfoInClock: 'Show Track Info',
+    showTrackInfoInClockHelp: 'Show current music information',
+    movement: 'Movement',
+    staticDesc: 'Centered on screen without movement',
+    fadeInOutDesc: 'Disappear and appear in different positions',
+    dvdMovementDesc: 'Classic DVD screensaver bouncing movement',
+    displayTime: 'Display Time',
+    displayTimeHelp: 'Time the element stays visible before fade (seconds)',
+    // How to use modal traduções
+    standardMode: 'Standard Mode',
+    screenSaverMode: 'Screen Saver Mode',
+    standardModeDescription: 'Displays Spotify Canvas with synchronized lyrics and music information. Automatically detects current music and synchronizes lyrics with music progress.',
+    screenSaverModeDescription: 'Displays album covers, clock, or both with movement animations. When no music is playing, automatically shows the clock.',
+    standardModeFeatures: 'Standard Mode Features:',
+    screenSaverModeFeatures: 'Screen Saver Mode Features:',
+    standardModeFeaturesList: '• Canvas: Animated Spotify video when available\n• Lyrics: Synchronized with music progress\n• Information: Song name, artist and album\n• Detection: Automatic current music detection\n• Fallback: Album cover when no Canvas available',
+    screenSaverModeFeaturesList: '• Display: Album covers (2 styles), clock, or both\n• Clock: 12h/24h format, timezone, optional date\n• Movement: Smooth fade in/out or DVD animation\n• Fallback: Clock when no music is playing',
+    displayModeParam: 'Display mode',
+    clockFormatParam: 'Clock format',
+    movementModeParam: 'Movement mode'
   }
 };
 

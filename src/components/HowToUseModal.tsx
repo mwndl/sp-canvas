@@ -1,6 +1,6 @@
 'use client';
 
-import { type Language } from '../lib/i18n';
+import { getTranslation, type Language } from '../lib/i18n';
 
 interface HowToUseModalProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface HowToUseModalProps {
 }
 
 export default function HowToUseModal({ isOpen, onClose, language }: HowToUseModalProps) {
+  const t = getTranslation(language);
 
   if (!isOpen) return null;
 
@@ -102,25 +103,19 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
+                    {t.standardMode}:
                   </h4>
                   <p>
-                    {language === 'pt'
-                      ? 'Exibe o Canvas do Spotify da música atual com letras sincronizadas e informações da faixa. Ideal para acompanhar a música que está tocando.'
-                      : 'Displays the Spotify Canvas of the current song with synchronized lyrics and track information. Perfect for following along with the music.'
-                    }
+                    {t.standardModeDescription}
                   </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
+                    {t.screenSaverMode}:
                   </h4>
                   <p>
-                    {language === 'pt'
-                      ? 'Exibe capas de álbum, relógio ou ambos com animações de movimento. Quando não há música tocando, automaticamente mostra o relógio.'
-                      : 'Displays album covers, clock, or both with movement animations. When no music is playing, automatically shows the clock.'
-                    }
+                    {t.screenSaverModeDescription}
                   </p>
                 </div>
               </div>
@@ -134,25 +129,19 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
+                    {t.standardMode}:
                   </h4>
                   <p>
-                    {language === 'pt'
-                      ? '• Canvas: Exibir Canvas do Spotify quando disponível\n• Informações da faixa: Mostrar título, artista e álbum sobrepostos\n• Letras: Mostrar letras sincronizadas da música\n• Modos de letra: 5 linhas centralizadas ou alinhadas à esquerda\n• Detecção: Automática ou faixa específica'
-                      : '• Canvas: Display Spotify Canvas when available\n• Track Info: Show title, artist and album overlaid\n• Lyrics: Show synchronized song lyrics\n• Lyrics Modes: 5 lines centered or left-aligned\n• Detection: Auto or specific track'
-                    }
+                    {t.standardModeFeaturesList}
                   </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
+                    {t.screenSaverMode}:
                   </h4>
                   <p>
-                    {language === 'pt'
-                      ? '• Exibição: Capas de álbum (2 estilos), relógio, ou ambos\n• Relógio: Formato 12h/24h, fuso horário, data opcional\n• Movimento: Fade in/out suave ou animação DVD\n• Fallback: Relógio quando não há música tocando'
-                      : '• Display: Album covers (2 styles), clock, or both\n• Clock: 12h/24h format, timezone, optional date\n• Movement: Smooth fade in/out or DVD animation\n• Fallback: Clock when no music is playing'
-                    }
+                    {t.screenSaverModeFeaturesList}
                   </p>
                 </div>
               </div>
@@ -178,25 +167,19 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
+                    {t.standardMode}:
                   </h4>
                   <p>
-                    {language === 'pt'
-                      ? '• Canvas: Reproduz automaticamente quando disponível\n• Letras: Sincronizadas com o progresso da música\n• Fallback: Capa do álbum quando não há Canvas'
-                      : '• Canvas: Automatically plays when available\n• Lyrics: Synchronized with music progress\n• Fallback: Album cover when no Canvas available'
-                    }
+                    {t.standardModeFeaturesList}
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
+                    {t.screenSaverMode}:
                   </h4>
                   <p>
-                    {language === 'pt'
-                      ? '• Movimento: Contínuo com animações suaves\n• Transições: Automáticas entre capas e relógio\n• Fallback: Relógio quando não há música tocando'
-                      : '• Movement: Continuous with smooth animations\n• Transitions: Automatic between covers and clock\n• Fallback: Clock when no music is playing'
-                    }
+                    {t.screenSaverModeFeaturesList}
                   </p>
                 </div>
               </div>

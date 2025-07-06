@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getTranslation, type Language } from '../lib/i18n';
 
 export interface ScreenSaverConfig {
   displayMode: 'album1' | 'album2' | 'clock';
@@ -15,9 +16,11 @@ export interface ScreenSaverConfig {
 interface ScreenSaverSettingsProps {
   config: ScreenSaverConfig;
   onConfigChange: (config: ScreenSaverConfig) => void;
+  language?: Language;
 }
 
-export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSettingsProps) => {
+export const ScreenSaverSettings = ({ config, onConfigChange, language = 'pt' }: ScreenSaverSettingsProps) => {
+  const t = getTranslation(language);
   const updateConfig = (updates: Partial<ScreenSaverConfig>) => {
     onConfigChange({ ...config, ...updates });
   };
@@ -26,7 +29,7 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
     <div className="divide-y divide-gray-700">
       {/* Display Mode */}
       <div className="p-4 hover:bg-gray-750 transition-colors">
-        <h3 className="text-white font-medium mb-3">Modo de Exibição</h3>
+        <h3 className="text-white font-medium mb-3">{t.displayMode}</h3>
         <div className="space-y-2">
           <label className="flex items-center">
             <input
@@ -38,8 +41,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               className="mr-3 accent-blue-400"
             />
             <div>
-              <span className="text-gray-300 block">Capa do álbum 1</span>
-              <span className="text-gray-400 text-xs">Capa centralizada com informações abaixo</span>
+              <span className="text-gray-300 block">{t.albumCover1}</span>
+              <span className="text-gray-400 text-xs">{t.albumCover1Desc}</span>
             </div>
           </label>
           <label className="flex items-center">
@@ -52,8 +55,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               className="mr-3 accent-blue-400"
             />
             <div>
-              <span className="text-gray-300 block">Capa do álbum 2</span>
-              <span className="text-gray-400 text-xs">Capa à esquerda com informações à direita</span>
+              <span className="text-gray-300 block">{t.albumCover2}</span>
+              <span className="text-gray-400 text-xs">{t.albumCover2Desc}</span>
             </div>
           </label>
           <label className="flex items-center">
@@ -66,23 +69,23 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               className="mr-3 accent-blue-400"
             />
             <div>
-              <span className="text-gray-300 block">Relógio</span>
-              <span className="text-gray-400 text-xs">Exibir relógio e data centralizados</span>
+              <span className="text-gray-300 block">{t.clock}</span>
+              <span className="text-gray-400 text-xs">{t.clockDesc}</span>
             </div>
           </label>
         </div>
       </div>
 
-      {/* Clock Settings - Always visible */}
+            {/* Clock Settings - Always visible */}
       <div className="p-4 bg-gray-750/30">
-        <h3 className="text-white font-medium mb-3">Configurações do Relógio</h3>
+        <h3 className="text-white font-medium mb-3">{t.clockSettings}</h3>
         <p className="text-gray-400 text-sm mb-4">
-          ⏰ Quando não houver faixa em reprodução, exibiremos o relógio como fallback
+          {t.clockFallbackMessage}
         </p>
         <div className="space-y-4">
           {/* Clock Mode */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Formato do Horário</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.clockFormat}</label>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -93,7 +96,7 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
                   onChange={(e) => updateConfig({ clockMode: e.target.value as '12h' | '24h' })}
                   className="mr-3 accent-blue-400"
                 />
-                <span className="text-gray-300">12 horas (AM/PM)</span>
+                <span className="text-gray-300">{t.clockFormat12h}</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -104,14 +107,14 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
                   onChange={(e) => updateConfig({ clockMode: e.target.value as '12h' | '24h' })}
                   className="mr-3 accent-blue-400"
                 />
-                <span className="text-gray-300">24 horas</span>
+                <span className="text-gray-300">{t.clockFormat24h}</span>
               </label>
             </div>
           </div>
 
           {/* Timezone */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Fuso Horário</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">{t.timezone}</label>
             <select
               value={config.timezone}
               onChange={(e) => updateConfig({ timezone: e.target.value })}
@@ -132,8 +135,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
           {/* Show Date */}
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-white font-medium">Exibir Data</h4>
-              <p className="text-gray-400 text-sm">Mostrar data atual abaixo do horário</p>
+              <h4 className="text-white font-medium">{t.showDate}</h4>
+              <p className="text-gray-400 text-sm">{t.showDateHelp}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -149,8 +152,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
           {/* Show Track Info */}
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-white font-medium">Exibir Dados da Faixa</h4>
-              <p className="text-gray-400 text-sm">Mostrar informações da música atual</p>
+              <h4 className="text-white font-medium">{t.showTrackInfoInClock}</h4>
+              <p className="text-gray-400 text-sm">{t.showTrackInfoInClockHelp}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -167,7 +170,7 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
 
       {/* Movement */}
       <div className="p-4 hover:bg-gray-750 transition-colors">
-        <h3 className="text-white font-medium mb-3">Movimento</h3>
+        <h3 className="text-white font-medium mb-3">{t.movement}</h3>
         <div className="space-y-3">
           <label className="flex items-center">
             <input
@@ -179,8 +182,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               className="mr-3 accent-blue-400"
             />
             <div>
-              <span className="text-gray-300 block">Estático</span>
-              <span className="text-gray-400 text-xs">Centralizado na tela sem movimento</span>
+              <span className="text-gray-300 block">{t.static}</span>
+              <span className="text-gray-400 text-xs">{t.staticDesc}</span>
             </div>
           </label>
           <label className="flex items-center">
@@ -193,8 +196,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               className="mr-3 accent-blue-400"
             />
             <div>
-              <span className="text-gray-300 block">Fade-in/out</span>
-              <span className="text-gray-400 text-xs">Desaparecer e aparecer em posições diferentes</span>
+              <span className="text-gray-300 block">{t.fadeInOut}</span>
+              <span className="text-gray-400 text-xs">{t.fadeInOutDesc}</span>
             </div>
           </label>
           <label className="flex items-center">
@@ -207,8 +210,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
               className="mr-3 accent-blue-400"
             />
             <div>
-              <span className="text-gray-300 block">DVD Movement</span>
-              <span className="text-gray-400 text-xs">Movimento clássico de descanso de tela de DVD</span>
+              <span className="text-gray-300 block">{t.dvdMovement}</span>
+              <span className="text-gray-400 text-xs">{t.dvdMovementDesc}</span>
             </div>
           </label>
         </div>
@@ -218,8 +221,8 @@ export const ScreenSaverSettings = ({ config, onConfigChange }: ScreenSaverSetti
       {config.movement === 'fade' && (
         <div className="flex items-center justify-between p-4 bg-gray-750/30">
           <div className="flex-1">
-            <h3 className="text-white font-medium">Tempo de Exibição</h3>
-            <p className="text-gray-400 text-sm">Tempo que o elemento fica visível antes do fade (segundos)</p>
+            <h3 className="text-white font-medium">{t.displayTime}</h3>
+            <p className="text-gray-400 text-sm">{t.displayTimeHelp}</p>
           </div>
           <input
             type="number"

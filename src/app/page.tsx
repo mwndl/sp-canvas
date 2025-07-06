@@ -338,6 +338,7 @@ export default function Home() {
           <ScreenSaverSettings 
             config={screenSaverConfig}
             onConfigChange={setScreenSaverConfig}
+            language={language}
           />
         )}
 
