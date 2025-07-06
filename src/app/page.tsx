@@ -99,281 +99,197 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-6xl w-full border border-gray-700">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
         {/* Header */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-white mb-2">{t.title}</h1>
-            <p className="text-gray-300 text-lg">{t.subtitle}</p>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            {/* Language Selector */}
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="pt">🇧🇷 Português</option>
-              <option value="en">🇺🇸 English</option>
-            </select>
+        <div className="p-6 border-b border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold text-white">{t.title}</h1>
+            
+            <div className="flex items-center space-x-3">
+              {/* Language Selector */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="pt">🇧🇷</option>
+                <option value="en">🇺🇸</option>
+              </select>
 
-            {/* How to use button */}
-            <button
-              onClick={() => setShowHowToUse(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              {t.howToUse}
-            </button>
+              {/* How to use button */}
+              <button
+                onClick={() => setShowHowToUse(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+              >
+                {t.howToUse}
+              </button>
+            </div>
           </div>
+          <p className="text-gray-400 text-sm">{t.subtitle}</p>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Left Column - Basic Settings */}
-          <div className="space-y-6">
-            {/* Music Search Section */}
-            <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
-              <h3 className="font-semibold text-white mb-4 flex items-center">
-                <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
-                {t.musicSearch}
-              </h3>
-              
-              <div className="space-y-4">
-                {/* Search Mode */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-3">
-                    {t.searchMode}
-                  </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
-                      <input
-                        type="radio"
-                        name="searchMode"
-                        value="auto"
-                        checked={searchMode === 'auto'}
-                        onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
-                        className="mr-3 accent-blue-400"
-                      />
-                      <span className="text-sm text-gray-300">{t.autoDetect}</span>
-                    </label>
-                    <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
-                      <input
-                        type="radio"
-                        name="searchMode"
-                        value="specific"
-                        checked={searchMode === 'specific'}
-                        onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
-                        className="mr-3 accent-blue-400"
-                      />
-                      <span className="text-sm text-gray-300">{t.specificTrack}</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Track ID Input */}
-                {searchMode === 'specific' && (
-                  <div>
-                    <label htmlFor="trackId" className="block text-sm font-medium text-gray-300 mb-2">
-                      {t.trackId}
-                    </label>
-                    <input
-                      type="text"
-                      id="trackId"
-                      value={trackId}
-                      onChange={(e) => setTrackId(e.target.value)}
-                      placeholder={language === 'pt' ? 'ID ou URL do Spotify' : 'ID or Spotify URL'}
-                      className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      {t.trackIdHelp}
-                    </p>
-                  </div>
-                )}
-
-                {/* Auto Update Settings */}
-                {searchMode === 'auto' && (
-                  <div>
-                    <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={autoUpdate}
-                        onChange={(e) => setAutoUpdate(e.target.checked)}
-                        className="mr-3 accent-blue-400"
-                      />
-                      <span className="text-sm font-medium text-gray-300">
-                        {t.autoUpdate}
-                      </span>
-                    </label>
-                    
-                    {autoUpdate && (
-                      <div className="mt-3 ml-5">
-                        <label htmlFor="pollingInterval" className="block text-sm font-medium text-gray-300 mb-2">
-                          {t.updateInterval}
-                        </label>
-                        <input
-                          type="number"
-                          id="pollingInterval"
-                          value={pollingInterval}
-                          onChange={(e) => setPollingInterval(parseInt(e.target.value) || 5)}
-                          min="1"
-                          max="60"
-                          step="1"
-                          className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">
-                          {formatTranslation(t.updateIntervalHelp, {
-                            interval: pollingInterval,
-                            plural: pollingInterval !== 1 ? t.seconds : t.second
-                          })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+        {/* Settings List */}
+        <div className="divide-y divide-gray-700">
+          {/* Show Canvas */}
+          <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
+            <div className="flex-1">
+              <h3 className="text-white font-medium">Show Canvas</h3>
+              <p className="text-gray-400 text-sm">Exibir Canvas do Spotify quando disponível</p>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showCanvas}
+                onChange={(e) => setShowCanvas(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
 
-            {/* Display Options */}
-            <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
-              <h3 className="font-semibold text-white mb-4 flex items-center">
-                <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
-                Exibição
-              </h3>
-              
-              <div className="space-y-4">
-                {/* Canvas Toggle */}
-                <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
+          {/* Show Track Info */}
+          {showCanvas && (
+            <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors bg-gray-750/30">
+              <div className="flex-1">
+                <h3 className="text-white font-medium">Show track info on Canvas</h3>
+                <p className="text-gray-400 text-sm">Exibir informações da música sobre o Canvas</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showTrackInfo}
+                  onChange={(e) => setShowTrackInfo(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          )}
+
+          {/* Show Lyrics */}
+          <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
+            <div className="flex-1">
+              <h3 className="text-white font-medium">Show Lyrics</h3>
+              <p className="text-gray-400 text-sm">Exibir letras da música sincronizadas</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showLyrics}
+                onChange={(e) => setShowLyrics(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          {/* Lyrics Mode */}
+          {showLyrics && (
+            <div className="p-4 bg-gray-750/30">
+              <h3 className="text-white font-medium mb-3">Lyrics Mode</h3>
+              <div className="space-y-2">
+                <label className="flex items-center">
                   <input
-                    type="checkbox"
-                    checked={showCanvas}
-                    onChange={(e) => setShowCanvas(e.target.checked)}
+                    type="radio"
+                    name="lyricsMode"
+                    value="5lines"
+                    checked={lyricsMode === '5lines'}
+                    onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
                     className="mr-3 accent-blue-400"
                   />
-                  <div>
-                    <span className="text-sm font-medium text-gray-300 block">
-                      Show Canvas
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      Exibir Canvas do Spotify quando disponível
-                    </span>
-                  </div>
+                  <span className="text-gray-300">5 lines (centered)</span>
                 </label>
-
-                {/* Track Info (visible when Canvas is enabled) */}
-                {showCanvas && (
-                  <div className="ml-5">
-                    <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={showTrackInfo}
-                        onChange={(e) => setShowTrackInfo(e.target.checked)}
-                        className="mr-3 accent-blue-400"
-                      />
-                      <div>
-                        <span className="text-sm font-medium text-gray-300 block">
-                          {t.showTrackInfo}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {t.showTrackInfoHelp}
-                        </span>
-                      </div>
-                    </label>
-                  </div>
-                )}
-
-                {/* Lyrics Toggle */}
-                <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <label className="flex items-center">
                   <input
-                    type="checkbox"
-                    checked={showLyrics}
-                    onChange={(e) => setShowLyrics(e.target.checked)}
+                    type="radio"
+                    name="lyricsMode"
+                    value="left"
+                    checked={lyricsMode === 'left'}
+                    onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
                     className="mr-3 accent-blue-400"
                   />
-                  <div>
-                    <span className="text-sm font-medium text-gray-300 block">
-                      {t.lyrics}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {t.lyricsHelp}
-                    </span>
-                  </div>
+                  <span className="text-gray-300">Left aligned</span>
                 </label>
               </div>
             </div>
+          )}
+
+          {/* Music Detection */}
+          <div className="p-4 hover:bg-gray-750 transition-colors">
+            <h3 className="text-white font-medium mb-3">Music Detection</h3>
+            <div className="space-y-3">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="searchMode"
+                  value="auto"
+                  checked={searchMode === 'auto'}
+                  onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
+                  className="mr-3 accent-blue-400"
+                />
+                <span className="text-gray-300">Auto detect current track</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="searchMode"
+                  value="specific"
+                  checked={searchMode === 'specific'}
+                  onChange={(e) => setSearchMode(e.target.value as 'auto' | 'specific')}
+                  className="mr-3 accent-blue-400"
+                />
+                <span className="text-gray-300">Search specific track</span>
+              </label>
+              
+              {/* Track ID Input */}
+              {searchMode === 'specific' && (
+                <div className="ml-6 mt-3">
+                  <input
+                    type="text"
+                    value={trackId}
+                    onChange={(e) => setTrackId(e.target.value)}
+                    placeholder="Spotify Track ID or URL"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right Column - Advanced Settings */}
-          <div className="space-y-6">
-            {/* Lyrics Settings */}
-            {showLyrics && (
-              <div className="bg-gray-700 border border-gray-600 rounded-xl p-6">
-                <h3 className="font-semibold text-white mb-4 flex items-center">
-                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
-                  {t.lyrics}
-                </h3>
-                
-                <div className="space-y-4">
-                  {/* Lyrics Mode */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
-                      {t.lyricsMode}
-                    </label>
-                    <div className="space-y-2">
-                      <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
-                        <input
-                          type="radio"
-                          name="lyricsMode"
-                          value="5lines"
-                          checked={lyricsMode === '5lines'}
-                          onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
-                          className="mr-3 accent-blue-400"
-                        />
-                        <span className="text-sm text-gray-300">{t.lyricsMode5Lines}</span>
-                      </label>
-                      <label className="flex items-center p-2 rounded-lg hover:bg-gray-600 transition-colors">
-                        <input
-                          type="radio"
-                          name="lyricsMode"
-                          value="left"
-                          checked={lyricsMode === 'left'}
-                          onChange={(e) => setLyricsMode(e.target.value as '5lines' | 'left')}
-                          className="mr-3 accent-blue-400"
-                        />
-                        <span className="text-sm text-gray-300">{t.lyricsModeLeft}</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
+          {/* Update Interval */}
+          {searchMode === 'auto' && (
+            <div className="flex items-center justify-between p-4 hover:bg-gray-750 transition-colors">
+              <div className="flex-1">
+                <h3 className="text-white font-medium">Update Interval</h3>
+                <p className="text-gray-400 text-sm">Check for new tracks every X seconds</p>
               </div>
-            )}
-
-            {/* Empty state for right column when no advanced options */}
-            {!showLyrics && (
-              <div className="bg-gray-700 border border-gray-600 rounded-xl p-6 flex items-center justify-center h-full min-h-[200px]">
-                <div className="text-center text-gray-400">
-                  <div className="text-4xl mb-2">⚙️</div>
-                  <p className="text-sm">Ative as letras para ver opções avançadas</p>
-                </div>
-              </div>
-            )}
-          </div>
+              <input
+                type="number"
+                value={pollingInterval}
+                onChange={(e) => setPollingInterval(parseInt(e.target.value) || 5)}
+                min="1"
+                max="60"
+                step="1"
+                className="w-16 px-2 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+          )}
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="mt-6 p-4 bg-red-900/20 border border-red-700 rounded-lg">
+          <div className="p-4 bg-red-900/20 border-t border-red-700">
             <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
 
         {/* Start Button */}
-        <div className="mt-8 flex justify-center">
+        <div className="p-6 border-t border-gray-700">
           <button
             onClick={startScreensaver}
             disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors disabled:cursor-not-allowed flex items-center space-x-2"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-3 rounded-lg text-lg font-semibold transition-colors disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {isLoading ? (
               <>
