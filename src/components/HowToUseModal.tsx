@@ -213,12 +213,12 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white text-sm">
-                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
+                    {t.screenSaverMode}:
                   </h4>
                   <div className="bg-gray-900 rounded p-3 font-mono text-xs space-y-1">
-                    <div><code className="text-green-400">displayMode=album1/album2/clock</code> - {language === 'pt' ? 'Modo de exibição' : 'Display mode'}</div>
-                    <div><code className="text-green-400">clockFormat=12h/24h</code> - {language === 'pt' ? 'Formato do relógio' : 'Clock format'}</div>
-                    <div><code className="text-green-400">movementMode=static/fade/dvd</code> - {language === 'pt' ? 'Modo de movimento' : 'Movement mode'}</div>
+                    <div><code className="text-green-400">displayMode=album1/album2/clock</code> - {t.displayModeParam}</div>
+                    <div><code className="text-green-400">clockFormat=12h/24h</code> - {t.clockFormatParam}</div>
+                    <div><code className="text-green-400">movementMode=static/fade/dvd</code> - {t.movementModeParam}</div>
                     <div><code className="text-green-400">fadeSpeed=5-60</code> - {language === 'pt' ? 'Velocidade do fade (segundos)' : 'Fade speed (seconds)'}</div>
                   </div>
                 </div>
