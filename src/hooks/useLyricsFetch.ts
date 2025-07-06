@@ -48,6 +48,64 @@ export const useLyricsFetch = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Função para limpar letras (remover instrumentais falsos e linhas em branco)
+  const cleanLyrics = (lyricsData: Lyrics): Lyrics => {
+    if (!lyricsData?.lines?.length) return lyricsData;
+
+    const cleanedLines: LyricLine[] = [];
+    const originalLines = lyricsData.lines;
+
+    for (let i = 0; i < originalLines.length; i++) {
+      const line = originalLines[i];
+      
+      // Pular linhas em branco (exceto se for a última linha)
+      if (line.words.trim() === '' && i < originalLines.length - 1) {
+        continue;
+      }
+
+      // Verificar se é um instrumental
+      if (line.words.trim() === '♪') {
+        const startTime = parseInt(line.startTimeMs);
+        
+        // Encontrar a linha anterior (não instrumental)
+        let previousLine = null;
+        for (let j = i - 1; j >= 0; j--) {
+          if (originalLines[j].words.trim() !== '♪' && originalLines[j].words.trim() !== '') {
+            previousLine = originalLines[j];
+            break;
+          }
+        }
+        
+        // Encontrar a próxima linha (não instrumental)
+        let nextLine = null;
+        for (let j = i + 1; j < originalLines.length; j++) {
+          if (originalLines[j].words.trim() !== '♪' && originalLines[j].words.trim() !== '') {
+            nextLine = originalLines[j];
+            break;
+          }
+        }
+        
+        // Calcular distância entre linhas
+        const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : startTime;
+        const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000;
+        const timeDistance = nextTime - previousTime;
+        
+        // Se a distância for menor que 15s, pular este instrumental (é falso)
+        if (timeDistance < 15000) {
+          continue;
+        }
+      }
+      
+      // Adicionar linha válida
+      cleanedLines.push(line);
+    }
+
+    return {
+      ...lyricsData,
+      lines: cleanedLines
+    };
+  };
+
   const fetchLyrics = useCallback(async () => {
     if (!enabled || !trackId) {
       return;
@@ -89,11 +147,18 @@ export const useLyricsFetch = ({
 
       const data = await response.json();
       
-      setLyrics(data.lyrics);
+      // Limpar letras antes de definir
+      const cleanedLyrics = data.lyrics ? cleanLyrics(data.lyrics) : null;
+      
+      setLyrics(cleanedLyrics);
       setColors(data.colors);
       
       if (debugMode) {
-        addDebugLog('LYRICS', `Lyrics loaded: ${data.lyrics?.lines?.length || 0} lines`);
+        const originalCount = data.lyrics?.lines?.length || 0;
+        const cleanedCount = cleanedLyrics?.lines?.length || 0;
+        const removedCount = originalCount - cleanedCount;
+        
+        addDebugLog('LYRICS', `Lyrics loaded: ${originalCount} lines, cleaned: ${cleanedCount} lines (removed ${removedCount} invalid lines)`);
         addDebugLog('LYRICS', `Provider: ${data.lyrics?.providerDisplayName || 'Unknown'}`);
       }
     } catch (err) {

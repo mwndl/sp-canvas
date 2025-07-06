@@ -43,6 +43,8 @@ interface FallbackDisplayProps {
   showTrackInfo?: boolean;
   // Lyrics mode prop
   lyricsMode?: '5lines' | 'left';
+  // Lyrics transition prop
+  isLyricsTransitioning?: boolean;
 }
 
 export const FallbackDisplay = ({
@@ -63,7 +65,9 @@ export const FallbackDisplay = ({
   // Track info prop
   showTrackInfo = true,
   // Lyrics mode prop
-  lyricsMode = '5lines'
+  lyricsMode = '5lines',
+  // Lyrics transition prop
+  isLyricsTransitioning = false
 }: FallbackDisplayProps) => {
   
   const [currentLyricIndexState, setCurrentLyricIndex] = useState(currentLyricIndex);
@@ -230,7 +234,7 @@ export const FallbackDisplay = ({
       </div>
 
       {/* Lyrics quando habilitadas - fora do container principal */}
-      {showLyrics && lyrics && (
+      {showLyrics && lyrics && !isLyricsTransitioning && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-50">
           <div 
             className={`mx-auto px-6 ${lyricsMode === 'left' ? 'w-full max-w-6xl' : 'w-full max-w-4xl text-center'}`}

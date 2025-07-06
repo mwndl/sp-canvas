@@ -139,6 +139,7 @@ export default function CanvasPage() {
 
   // Lyrics sync state
   const [currentLyricIndex, setCurrentLyricIndex] = useState(-1); // -1 = aguardando primeira linha
+  const [isLyricsTransitioning, setIsLyricsTransitioning] = useState(false); // Controla transição de letras
   const lastLyricsTrackId = useRef<string | null>(null);
 
   // Sincronizar a linha da letra com o tempo do player do Spotify
@@ -198,15 +199,29 @@ export default function CanvasPage() {
     }
     
     setCurrentLyricIndex(idx);
+    
+    // Se estamos em transição e encontramos uma linha válida, desativar transição
+    if (isLyricsTransitioning && idx >= 0) {
+      setIsLyricsTransitioning(false);
+      if (debugMode) {
+        addDebugLog('TRANSITION', 'New lyrics ready - showing lyrics');
+      }
+    }
   }, [showLyrics, lyrics, playerProgress, debugMode, addDebugLog]);
 
   // Resetar índice da letra ao trocar de música
   useEffect(() => {
     if (lyrics && playerProgress?.trackId !== lastLyricsTrackId.current) {
+      // Ativar estado de transição
+      setIsLyricsTransitioning(true);
       setCurrentLyricIndex(-1); // Reset para aguardar primeira linha
       lastLyricsTrackId.current = playerProgress?.trackId || null;
+      
+      if (debugMode) {
+        addDebugLog('TRANSITION', 'Track changed - hiding lyrics during transition');
+      }
     }
-  }, [lyrics, playerProgress?.trackId]);
+  }, [lyrics, playerProgress?.trackId, debugMode, addDebugLog]);
 
   // Calcular progresso para animação de "..." quando aguardando primeira linha
   const getWaitingProgress = () => {
@@ -220,6 +235,8 @@ export default function CanvasPage() {
     const progress = Math.min(currentTimeMs / firstLineTime, 1);
     return progress;
   };
+
+
 
   // Initial debug log if active
   useEffect(() => {
@@ -431,6 +448,8 @@ export default function CanvasPage() {
         showTrackInfo={showTrackInfo}
         // Lyrics mode prop
         lyricsMode={lyricsMode}
+        // Lyrics transition prop
+        isLyricsTransitioning={isLyricsTransitioning}
       />
     );
   }
@@ -517,7 +536,7 @@ export default function CanvasPage() {
       )}
 
       {/* Lyrics Overlay */}
-      {showLyrics && lyrics && (
+      {showLyrics && lyrics && !isLyricsTransitioning && (
         <div
           className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none select-none"
           style={{ zIndex: 40 }}
@@ -541,41 +560,8 @@ export default function CanvasPage() {
               </div>
             )}
             
-            {/* Linhas da letra */}
+                        {/* Linhas da letra */}
             {lyrics.lines.map((line, idx) => {
-              // Verificar se é um instrumental falso e pular
-              if (line.words.trim() === '♪') {
-                const startTime = parseInt(line.startTimeMs);
-                
-                // Encontrar a linha anterior (não instrumental)
-                let previousLine = null;
-                for (let i = idx - 1; i >= 0; i--) {
-                  if (lyrics.lines[i].words.trim() !== '♪') {
-                    previousLine = lyrics.lines[i];
-                    break;
-                  }
-                }
-                
-                // Encontrar a próxima linha (não instrumental)
-                let nextLine = null;
-                for (let i = idx + 1; i < lyrics.lines.length; i++) {
-                  if (lyrics.lines[i].words.trim() !== '♪') {
-                    nextLine = lyrics.lines[i];
-                    break;
-                  }
-                }
-                
-                // Calcular distância entre linhas
-                const previousTime = previousLine ? parseInt(previousLine.startTimeMs) : startTime;
-                const nextTime = nextLine ? parseInt(nextLine.startTimeMs) : startTime + 10000;
-                const timeDistance = nextTime - previousTime;
-                
-                // Se a distância for menor que 15s, pular este instrumental
-                if (timeDistance < 15000) {
-                  return null;
-                }
-              }
-              
               // Determinar quantas linhas mostrar baseado no modo
               const maxLines = lyricsMode === 'left' ? 3 : 2;
               
