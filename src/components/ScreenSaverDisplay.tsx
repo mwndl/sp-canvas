@@ -37,13 +37,23 @@ export const ScreenSaverDisplay = ({ config, track, debugMode = false, addDebugL
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   
+  // Determinar se devemos fazer polling baseado na configuração
+  const shouldPollForMusic = !(config.displayMode === 'clock' && !config.showTrackInfo);
+  
+  // Log quando polling está desabilitado
+  useEffect(() => {
+    if (!shouldPollForMusic && debugMode) {
+      addDebugLog('SCREEN_SAVER', 'Polling disabled: clock mode with showTrackInfo=false');
+    }
+  }, [shouldPollForMusic, debugMode, addDebugLog]);
+  
   // Player progress hook para detectar mudanças de música
   const {
     playerProgress,
     isLoading: isPlayerLoading,
     error: playerError
   } = useScreenSaverPlayerProgress({
-    enabled: true, // Sempre habilitado no Screen Saver
+    enabled: shouldPollForMusic, // Só habilitado se não for clock sem track info
     debugMode,
     addDebugLog
   });
@@ -55,7 +65,7 @@ export const ScreenSaverDisplay = ({ config, track, debugMode = false, addDebugL
     isLoading: isCanvasLoading,
     error: canvasError
   } = useScreenSaverCanvasFetch({
-    trackId: playerProgress?.trackId || null,
+    trackId: shouldPollForMusic ? (playerProgress?.trackId || null) : null,
     debugMode,
     addDebugLog
   });
