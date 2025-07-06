@@ -102,24 +102,36 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Automático:' : 'Auto Mode:'}
+                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? 'O SpotSaver detecta automaticamente a música que está tocando no Spotify e exibe o Canvas correspondente.'
-                      : 'SpotSaver automatically detects the music playing on Spotify and displays the corresponding Canvas.'
+                      ? 'Exibe o Canvas do Spotify da música atual com letras sincronizadas e informações da faixa. Ideal para acompanhar a música que está tocando.'
+                      : 'Displays the Spotify Canvas of the current song with synchronized lyrics and track information. Perfect for following along with the music.'
                     }
                   </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">
-                    {language === 'pt' ? 'Modo Específico:' : 'Specific Mode:'}
+                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? 'Insira o Track ID de uma música específica para exibir seu Canvas. Encontre o Track ID na URL do Spotify: spotify.com/track/[ID]'
-                      : 'Enter a specific track ID to display its Canvas. Find the Track ID in the Spotify URL: spotify.com/track/[ID]'
+                      ? 'Exibe capas de álbum, relógio ou ambos com animações de movimento. Quando não há música tocando, automaticamente mostra o relógio.'
+                      : 'Displays album covers, clock, or both with movement animations. When no music is playing, automatically shows the clock.'
+                    }
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white">
+                    {language === 'pt' ? 'Detecção de Música:' : 'Music Detection:'}
+                  </h4>
+                  <p>
+                    {language === 'pt'
+                      ? '• Automática: Detecta automaticamente a música que está tocando no Spotify\n• Específica: Insira o Track ID de uma música específica. Encontre o ID na URL: spotify.com/track/[ID]'
+                      : '• Auto: Automatically detects the music playing on Spotify\n• Specific: Enter a specific track ID. Find the ID in the URL: spotify.com/track/[ID]'
                     }
                   </p>
                 </div>
@@ -138,8 +150,8 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? '• Canvas: Exibir Canvas do Spotify quando disponível\n• Letras: Mostrar letras sincronizadas da música\n• Informações: Mostrar título, artista e álbum\n• Modos de letra: 5 linhas centralizadas ou alinhadas à esquerda'
-                      : '• Canvas: Display Spotify Canvas when available\n• Lyrics: Show synchronized song lyrics\n• Track Info: Display title, artist and album\n• Lyrics Modes: 5 lines centered or left-aligned'
+                      ? '• Canvas: Exibir Canvas do Spotify quando disponível\n• Informações da faixa: Mostrar título, artista e álbum sobrepostos\n• Letras: Mostrar letras sincronizadas da música\n• Modos de letra: 5 linhas centralizadas ou alinhadas à esquerda\n• Detecção: Automática ou faixa específica'
+                      : '• Canvas: Display Spotify Canvas when available\n• Track Info: Show title, artist and album overlaid\n• Lyrics: Show synchronized song lyrics\n• Lyrics Modes: 5 lines centered or left-aligned\n• Detection: Auto or specific track'
                     }
                   </p>
                 </div>
@@ -150,8 +162,8 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
                   </h4>
                   <p>
                     {language === 'pt'
-                      ? '• Capas de álbum: Exibir capas com movimento\n• Relógio: Mostrar hora atual com opções de fuso horário\n• Movimento: Fade in/out ou animação DVD\n• Fallback: Relógio quando não há música tocando'
-                      : '• Album Covers: Display covers with movement\n• Clock: Show current time with timezone options\n• Movement: Fade in/out or DVD animation\n• Fallback: Clock when no music is playing'
+                      ? '• Exibição: Capas de álbum (2 estilos), relógio, ou ambos\n• Relógio: Formato 12h/24h, fuso horário, data opcional\n• Movimento: Fade in/out suave ou animação DVD\n• Fallback: Relógio quando não há música tocando'
+                      : '• Display: Album covers (2 styles), clock, or both\n• Clock: 12h/24h format, timezone, optional date\n• Movement: Smooth fade in/out or DVD animation\n• Fallback: Clock when no music is playing'
                     }
                   </p>
                 </div>
@@ -163,13 +175,42 @@ export default function HowToUseModal({ isOpen, onClose, language }: HowToUseMod
               <h3 className="text-xl font-semibold text-white mb-3">
                 {language === 'pt' ? '5. Controles' : '5. Controls'}
               </h3>
-              <div className="bg-gray-700 rounded-lg p-4">
-                <p>
-                  {language === 'pt'
-                    ? 'Pressione ESC para sair do screensaver e voltar à tela de configurações.'
-                    : 'Press ESC to exit the screensaver and return to the settings screen.'
-                  }
-                </p>
+              <div className="bg-gray-700 rounded-lg p-4 space-y-3">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white">
+                    {language === 'pt' ? 'Navegação:' : 'Navigation:'}
+                  </h4>
+                  <p>
+                    {language === 'pt'
+                      ? '• ESC: Sair do screensaver e voltar à tela de configurações\n• Mouse: Clique para sair (quando disponível)'
+                      : '• ESC: Exit screensaver and return to settings screen\n• Mouse: Click to exit (when available)'
+                    }
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white">
+                    {language === 'pt' ? 'Modo Padrão:' : 'Standard Mode:'}
+                  </h4>
+                  <p>
+                    {language === 'pt'
+                      ? '• Canvas: Reproduz automaticamente quando disponível\n• Letras: Sincronizadas com o progresso da música\n• Fallback: Capa do álbum quando não há Canvas'
+                      : '• Canvas: Automatically plays when available\n• Lyrics: Synchronized with music progress\n• Fallback: Album cover when no Canvas available'
+                    }
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-white">
+                    {language === 'pt' ? 'Modo Screen Saver:' : 'Screen Saver Mode:'}
+                  </h4>
+                  <p>
+                    {language === 'pt'
+                      ? '• Movimento: Contínuo com animações suaves\n• Transições: Automáticas entre capas e relógio\n• Fallback: Relógio quando não há música tocando'
+                      : '• Movement: Continuous with smooth animations\n• Transitions: Automatic between covers and clock\n• Fallback: Clock when no music is playing'
+                    }
+                  </p>
+                </div>
               </div>
             </div>
 
