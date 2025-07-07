@@ -45,7 +45,8 @@ export const useCanvasParams = (): CanvasParams => {
   
   // Music search settings
   const trackId = searchParams.get('trackId');
-  const autoUpdate = searchParams.get('autoUpdate') !== 'false';
+  // Desabilitar autoUpdate por padrão quando não há trackId específico (usamos player progress)
+  const autoUpdate = searchParams.get('autoUpdate') === 'true';
   const pollingInterval = parseInt(searchParams.get('pollingInterval') || '5000');
   
   // Display settings

@@ -63,7 +63,7 @@ export const useCanvasFetch = ({
           addDebugLog('API', `Searching for specific Track ID: ${specificTrackId}`);
         }
       } else {
-        console.log('🎵 Searching for current track');
+        console.log('🎵 Searching for current track (triggered by:', new Error().stack?.split('\n')[2]?.trim() || 'unknown', ')');
         if (debugMode) {
           addDebugLog('API', 'Searching for current track');
         }
@@ -204,14 +204,33 @@ export const useCanvasFetch = ({
 
   // Polling to check for track changes
   useEffect(() => {
-    // Não fazer polling automático para Canvas
-    // O Canvas só deve ser buscado quando a música mudar
+    // Não fazer polling automático para Canvas quando temos player progress
+    // O Canvas só deve ser buscado quando a música mudar via player progress
     if (trackId) {
       console.log('🎯 Specific track detected - no polling needed');
+    } else if (playerProgress) {
+      console.log('🎵 Canvas will be fetched only when track changes via player progress');
+    } else if (autoUpdate) {
+      // Só fazer polling se não temos player progress e autoUpdate está ativo
+      console.log('🔄 Canvas polling enabled (no player progress available)');
+      
+      // Fetch inicial
+      fetchCanvas();
+      
+      // Polling
+      pollingIntervalRef.current = setInterval(() => {
+        fetchCanvas();
+      }, pollingInterval);
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+      };
     } else {
       console.log('🎵 Canvas will be fetched only when track changes');
     }
-  }, [trackId]);
+  }, [trackId, playerProgress, autoUpdate, pollingInterval, fetchCanvas]);
 
   // Initial fetch
   useEffect(() => {
